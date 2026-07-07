@@ -36,6 +36,13 @@ const bloom = document.querySelector<HTMLElement>("[data-bloom]");
 
 const els = queryControls(document);
 
+const hudStats = {
+  population: document.querySelector('[data-stat="population"]')!,
+  generation: document.querySelector('[data-stat="generation"]')!,
+  divisions: document.querySelector('[data-stat="divisions"]')!,
+  mutations: document.querySelector('[data-stat="mutations"]')!,
+};
+
 let storage: Storage | null = null;
 try {
   storage = window.localStorage;
@@ -226,18 +233,10 @@ const frame = (now: number): void => {
   );
 
   const stats = lineage.stats();
-  document.querySelector('[data-stat="population"]')!.textContent = formatCount(
-    stats.population,
-  );
-  document.querySelector('[data-stat="generation"]')!.textContent = formatCount(
-    stats.maxGeneration,
-  );
-  document.querySelector('[data-stat="divisions"]')!.textContent = formatCount(
-    stats.divisions,
-  );
-  document.querySelector('[data-stat="mutations"]')!.textContent = formatCount(
-    stats.mutations,
-  );
+  hudStats.population.textContent = formatCount(stats.population);
+  hudStats.generation.textContent = formatCount(stats.maxGeneration);
+  hudStats.divisions.textContent = formatCount(stats.divisions);
+  hudStats.mutations.textContent = formatCount(stats.mutations);
 
   requestAnimationFrame(frame);
 };
