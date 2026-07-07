@@ -20,20 +20,29 @@ that forward and you get a branching tree — the same structure biologists draw
 *lineage tree*. Mitosis Lab draws it live, so you can *see* how a knob like
 "mutation rate" reshapes an entire population's history.
 
-## Planned features
+## Features
 
 - **Live lineage tree** — a single seed cell blooms into a branching genealogy,
-  drawn on Canvas at 60fps with smooth growth as new divisions land.
+  laid out as a radial dendrogram and drawn on Canvas with smooth birth tweens
+  as new divisions land.
 - **Biology you can tune** — sliders for mutation rate, mean division interval,
-  timing jitter, and max population; the tree responds immediately.
+  timing jitter, and max population; the tree responds live.
 - **Inherited traits** — each cell carries a small genome (hue, size, division
   bias) that drifts on division, so mutations are visible as colour/shape lineages.
 - **Deterministic + shareable** — a seed field makes any run reproducible; the seed
-  lives in the URL so a run can be shared exactly.
+  and every biology parameter live in the URL so a run can be shared exactly.
 - **Playback control** — play / pause / step / reset, and a speed control from slow
   study to fast-forward.
 - **Readouts** — live population, generation depth, division count, and a mutation
   tally, styled like a lab instrument.
+- **Feedback** — a mother pulse + expanding ring on every division, an mCherry
+  flare on mutated daughters, synth SFX with a persistent mute, and a
+  colony-saturated celebration overlay when the population cap is hit.
+- **Auto-fit camera** — the view zooms/pans to keep the whole growing tree in
+  frame without any input.
+
+Still ahead: a landing page sharing the app's brand and a real-browser QA pass
+(resize/hover/focus/play-through) — see `docs/BACKLOG.md` for the live list.
 
 ## Stack
 
@@ -41,11 +50,14 @@ that forward and you get a branching tree — the same structure biologists draw
 - **HTML5 Canvas** — hand-rolled renderer at `devicePixelRatio` for crisp retina.
 - **Vite** — dev server + static build to `dist/` (relative asset paths, hostable
   under any base path).
-- **Vitest** — unit tests for the pure simulation core (RNG, division, inheritance).
+- **Vitest** — unit tests for the simulation core (RNG, division, inheritance)
+  and every pure "app math" module (radial layout, camera fit, URL/param
+  parsing, tween/timestep helpers).
 
 The simulation core is deliberately separated from rendering: it's pure,
-deterministic, and fully unit-tested, so the biology is correct independent of the
-pixels.
+deterministic, and fully unit-tested, so the biology is correct independent of
+the pixels. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full
+module map and data flow.
 
 ## Develop
 
@@ -58,9 +70,12 @@ npm run build    # static bundle in dist/
 
 ## Status
 
-Early scaffold. See [`docs/VISION.md`](docs/VISION.md) for the plan,
-[`docs/BACKLOG.md`](docs/BACKLOG.md) for the epic/story breakdown, and
-[`docs/DESIGN.md`](docs/DESIGN.md) for the art direction.
+The wow moment, biology controls, transport, and juice/sound/celebration
+epics are built and unit-tested (13 of 17 backlog stories). See
+[`docs/VISION.md`](docs/VISION.md) for the plan,
+[`docs/BACKLOG.md`](docs/BACKLOG.md) for the epic/story breakdown (with
+verification notes per story), [`docs/DESIGN.md`](docs/DESIGN.md) for the art
+direction, and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the module map.
 
 ## License
 
