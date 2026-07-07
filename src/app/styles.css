@@ -185,3 +185,114 @@ h3,
   overflow: hidden;
   clip: rect(0 0 0 0);
 }
+
+/* Control rail — floating glass panel, bottom-left */
+.rail {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  z-index: 3;
+  width: min(340px, calc(100vw - 48px));
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: rgba(12, 26, 22, 0.7);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), var(--shadow-glow);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+
+.rail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ctl {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.ctl-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  color: var(--text);
+}
+
+.ctl-value {
+  font-variant-numeric: tabular-nums;
+  color: var(--dapi);
+  font-weight: 600;
+}
+
+/* Themed range slider */
+.ctl input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.ctl input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+.ctl input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+.ctl input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -7px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--gfp);
+  border: 2px solid var(--surface-1);
+  box-shadow: 0 0 10px rgba(57, 245, 168, 0.55);
+  transition: transform 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+
+.ctl input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--gfp);
+  border: 2px solid var(--surface-1);
+  box-shadow: 0 0 10px rgba(57, 245, 168, 0.55);
+  transition: transform 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+
+.ctl input[type="range"]:hover::-webkit-slider-thumb,
+.ctl input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+  box-shadow: 0 0 16px rgba(57, 245, 168, 0.85);
+}
+
+.ctl input[type="range"]:focus-visible::-webkit-slider-thumb,
+.ctl input[type="range"]:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--dapi);
+  outline-offset: 2px;
+}
+
+.ctl input[type="range"]:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
