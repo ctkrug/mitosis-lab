@@ -13,11 +13,188 @@
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23081310'/%3E%3Ccircle cx='12' cy='16' r='6.5' fill='none' stroke='%2339f5a8' stroke-width='2.4'/%3E%3Ccircle cx='21' cy='16' r='6.5' fill='none' stroke='%23ff5db1' stroke-width='2.4'/%3E%3C/svg%3E"
     />
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+    />
     <link rel="stylesheet" href="./src/app/styles.css" />
   </head>
   <body>
     <main id="app" aria-label="Mitosis Lab">
       <canvas id="stage" aria-label="Live cell-lineage tree"></canvas>
+
+      <header class="masthead">
+        <a class="wordmark" href="./" aria-label="Mitosis Lab home">
+          <span class="wordmark-text">MIT</span>
+          <svg
+            class="wordmark-o"
+            viewBox="0 0 40 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <circle class="ring ring-gfp" cx="15" cy="12" r="9" />
+            <circle class="ring ring-mcherry" cx="25" cy="12" r="9" />
+          </svg>
+          <span class="wordmark-text">SIS LAB</span>
+        </a>
+      </header>
+
+      <section class="hud" aria-label="Run readouts">
+        <div class="hud-stat">
+          <span class="hud-label">Population</span>
+          <span class="hud-value" data-stat="population">0</span>
+        </div>
+        <div class="hud-stat">
+          <span class="hud-label">Generation</span>
+          <span class="hud-value" data-stat="generation">0</span>
+        </div>
+        <div class="hud-stat">
+          <span class="hud-label">Divisions</span>
+          <span class="hud-value" data-stat="divisions">0</span>
+        </div>
+        <div class="hud-stat">
+          <span class="hud-label">Mutations</span>
+          <span class="hud-value" data-stat="mutations">0</span>
+        </div>
+        <p class="hud-live" data-live role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="rail" aria-label="Biology and playback controls">
+        <div class="rail-group" role="group" aria-label="Biology parameters">
+          <label class="ctl">
+            <span class="ctl-row">
+              <span>Mutation rate</span>
+              <span class="ctl-value" data-value="mutation">0.25</span>
+            </span>
+            <input
+              type="range"
+              id="ctl-mutation"
+              min="0"
+              max="1"
+              step="0.01"
+              value="0.25"
+            />
+          </label>
+          <label class="ctl">
+            <span class="ctl-row">
+              <span>Division interval</span>
+              <span class="ctl-value" data-value="interval">2.2s</span>
+            </span>
+            <input
+              type="range"
+              id="ctl-interval"
+              min="0.3"
+              max="8"
+              step="0.1"
+              value="2.2"
+            />
+          </label>
+          <label class="ctl">
+            <span class="ctl-row">
+              <span>Timing jitter</span>
+              <span class="ctl-value" data-value="jitter">0.35</span>
+            </span>
+            <input
+              type="range"
+              id="ctl-jitter"
+              min="0"
+              max="1"
+              step="0.01"
+              value="0.35"
+            />
+          </label>
+          <label class="ctl">
+            <span class="ctl-row">
+              <span>Max population</span>
+              <span class="ctl-value" data-value="population">512</span>
+            </span>
+            <input
+              type="range"
+              id="ctl-population"
+              min="8"
+              max="1024"
+              step="8"
+              value="512"
+            />
+          </label>
+        </div>
+
+        <div class="transport" role="group" aria-label="Playback">
+          <button type="button" id="btn-play" aria-label="Pause">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <rect x="6" y="5" width="4" height="14" rx="1" />
+              <rect x="14" y="5" width="4" height="14" rx="1" />
+            </svg>
+          </button>
+          <button type="button" id="btn-step" aria-label="Step one division cycle">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M6 5l10 7-10 7z" />
+              <rect x="17" y="5" width="2.5" height="14" rx="1" />
+            </svg>
+          </button>
+          <button type="button" id="btn-reset" aria-label="Reset run">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"
+              />
+            </svg>
+          </button>
+          <label class="ctl ctl-speed">
+            <span class="ctl-row">
+              <span>Speed</span>
+              <span class="ctl-value" data-value="speed">1×</span>
+            </span>
+            <input
+              type="range"
+              id="ctl-speed"
+              min="0.25"
+              max="8"
+              step="0.25"
+              value="1"
+            />
+          </label>
+          <button type="button" id="btn-mute" aria-label="Mute sound" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M4 9v6h4l5 4V5L8 9H4z" />
+              <path class="mute-x" d="M16 9l5 6M21 9l-5 6" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="seed-row" role="group" aria-label="Seed and sharing">
+          <label class="ctl ctl-seed">
+            <span class="ctl-row"><span>Seed</span></span>
+            <input type="text" id="ctl-seed" value="mitosis" spellcheck="false" />
+          </label>
+          <button type="button" id="btn-share">Share run</button>
+        </div>
+      </section>
+
+      <div class="bloom" data-bloom hidden>
+        <div class="bloom-card">
+          <p class="bloom-title">Colony saturated</p>
+          <dl class="bloom-stats">
+            <div><dt>Population</dt><dd data-bloom-stat="population"></dd></div>
+            <div><dt>Generations</dt><dd data-bloom-stat="generation"></dd></div>
+            <div><dt>Divisions</dt><dd data-bloom-stat="divisions"></dd></div>
+            <div><dt>Mutations</dt><dd data-bloom-stat="mutations"></dd></div>
+            <div><dt>Seed</dt><dd data-bloom-stat="seed"></dd></div>
+          </dl>
+          <div class="bloom-actions">
+            <button type="button" id="btn-bloom-share">Share this run</button>
+            <button type="button" id="btn-bloom-new">New seed</button>
+          </div>
+        </div>
+      </div>
     </main>
     <script type="module" src="./src/app/main.ts"></script>
   </body>
