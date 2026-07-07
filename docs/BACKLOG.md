@@ -105,5 +105,5 @@ a placeholder bloom renderer. BUILD replaces the placeholder with the real tree.
 
 ---
 
-**Story count: 15** across 4 epics. The wow moment (1.1) is the first story of the
+**Story count: 17** across 4 epics. The wow moment (1.1) is the first story of the
 first epic and is reachable within Epic 1.
