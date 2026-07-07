@@ -138,3 +138,50 @@ h3,
     animation: none;
   }
 }
+
+/* Instrument HUD — live readouts, top-right */
+.hud {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 3;
+  display: grid;
+  grid-auto-flow: column;
+  gap: 20px;
+  padding: 14px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: rgba(12, 26, 22, 0.62);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-glow);
+}
+
+.hud-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 64px;
+}
+
+.hud-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.hud-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--dapi);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 10px rgba(91, 214, 255, 0.35);
+}
+
+.hud-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
