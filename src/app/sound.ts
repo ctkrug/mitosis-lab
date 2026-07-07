@@ -21,6 +21,14 @@ const VOICES: Record<SfxKind, Voice> = {
   ui: { freq: 880, duration: 0.04, type: "square", gain: 0.03 },
 };
 
+/** Minimum gap between repeats of a given SFX kind, so a fast run can't spam it. */
+const THROTTLE_MS: Record<SfxKind, number> = {
+  divide: 70,
+  mutate: 90,
+  saturate: 1000,
+  ui: 40,
+};
+
 /** True if `nowMs` is still within `minIntervalMs` of `lastMs`. */
 export function shouldThrottle(
   lastMs: number,
@@ -81,11 +89,9 @@ export class SoundEngine {
   /** Play a synthesized SFX. `now` is injectable for tests; defaults to wall time. */
   play(kind: SfxKind, now: number = performance.now()): void {
     if (this.muted) return;
-    if (kind === "divide") {
-      const last = this.lastPlayedAt.divide ?? -Infinity;
-      if (shouldThrottle(last, now, 70)) return;
-      this.lastPlayedAt.divide = now;
-    }
+    const last = this.lastPlayedAt[kind] ?? -Infinity;
+    if (shouldThrottle(last, now, THROTTLE_MS[kind])) return;
+    this.lastPlayedAt[kind] = now;
 
     const ctx = this.context();
     if (!ctx) return;
