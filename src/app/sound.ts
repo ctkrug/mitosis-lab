@@ -75,6 +75,12 @@ export class SoundEngine {
     return this.muted;
   }
 
+  /** Create/resume the AudioContext from a user gesture (autoplay policy). */
+  unlock(): void {
+    const ctx = this.context();
+    if (ctx && ctx.state === "suspended") void ctx.resume();
+  }
+
   private context(): AudioContext | null {
     if (this.ctx) return this.ctx;
     if (typeof window === "undefined") return null;
