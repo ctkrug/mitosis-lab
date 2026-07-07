@@ -12,6 +12,7 @@ import { damp, easeOutCubic, clamp } from "./tween.js";
 
 const BIRTH_TWEEN_MS = 120;
 const RIPPLE_MS = { divide: 460, mutate: 620 };
+const PULSE_MS = 150;
 const CAMERA_LAMBDA = 3.2;
 
 interface Ripple {
@@ -19,6 +20,14 @@ interface Ripple {
   y: number;
   startedAt: number;
   kind: "divide" | "mutate";
+}
+
+interface Pulse {
+  x: number;
+  y: number;
+  hue: number;
+  baseRadius: number;
+  startedAt: number;
 }
 
 export interface RenderViewport {
@@ -32,6 +41,7 @@ export class TreeRenderer {
   private birthAt = new Map<number, number>();
   private divided = new Set<number>();
   private ripples: Ripple[] = [];
+  private pulses: Pulse[] = [];
   private lastFrameAt: number | null = null;
 
   /** Drop all remembered state — call on reset/reseed. */
@@ -40,6 +50,7 @@ export class TreeRenderer {
     this.birthAt.clear();
     this.divided.clear();
     this.ripples = [];
+    this.pulses = [];
     this.lastFrameAt = null;
   }
 
@@ -65,6 +76,7 @@ export class TreeRenderer {
 
     this.drawEdges(ctx, cells, layout);
     this.drawNodes(ctx, cells, layout, nowMs);
+    this.drawPulses(ctx, nowMs);
     this.drawRipples(ctx, nowMs);
 
     ctx.restore();
@@ -94,6 +106,13 @@ export class TreeRenderer {
       }
       if (cell.divided && !this.divided.has(cell.id)) {
         this.ripples.push({ x: node.x, y: node.y, startedAt: nowMs, kind: "divide" });
+        this.pulses.push({
+          x: node.x,
+          y: node.y,
+          hue: cell.genome.hue,
+          baseRadius: 5 + 5 * cell.genome.size,
+          startedAt: nowMs,
+        });
       }
     }
     for (const cell of cells) {
@@ -169,6 +188,18 @@ export class TreeRenderer {
     }
   }
 
+  private drawPulses(ctx: CanvasRenderingContext2D, nowMs: number): void {
+    for (const pulse of this.pulses) {
+      const t = clamp((nowMs - pulse.startedAt) / PULSE_MS, 0, 1);
+      if (t >= 1) continue;
+      const radius = pulse.baseRadius * (1.6 - 0.6 * t);
+      ctx.beginPath();
+      ctx.arc(pulse.x, pulse.y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${pulse.hue}, 88%, 62%, ${(1 - t) * 0.6})`;
+      ctx.fill();
+    }
+  }
+
   private drawRipples(ctx: CanvasRenderingContext2D, nowMs: number): void {
     for (const ripple of this.ripples) {
       const life = RIPPLE_MS[ripple.kind];
@@ -188,5 +219,6 @@ export class TreeRenderer {
     this.ripples = this.ripples.filter(
       (r) => nowMs - r.startedAt < RIPPLE_MS[r.kind],
     );
+    this.pulses = this.pulses.filter((p) => nowMs - p.startedAt < PULSE_MS);
   }
 }
