@@ -1,54 +1,245 @@
 /**
- * Entry point — "hello it runs" bootstrap.
- *
- * Wires a Lineage to the canvas and runs a real-time loop that advances the
- * simulation and draws living cells as glowing nuclei. The full lineage-tree
- * renderer, controls, and juice arrive in the BUILD phase (see docs/BACKLOG.md);
- * this proves the core loop end-to-end: seed → divide → draw.
+ * Entry point — wires the simulation, renderer, controls, sound, and URL
+ * state together. See docs/ARCHITECTURE.md for the module map; the pure
+ * math (layout, camera, clamping, URL parsing) all lives in dedicated,
+ * unit-tested files, so this is mostly plumbing.
  */
 import { Lineage } from "../sim/lineage.js";
-import { attachStage, type Stage } from "./canvas.js";
+import { DEFAULT_PARAMS, type SimParams } from "../sim/types.js";
+import { attachStage } from "./canvas.js";
+import { TreeRenderer } from "./render.js";
+import { FixedStepLoop } from "./sim-loop.js";
+import { clampParams } from "./params.js";
+import { clampSpeed, formatSpeed } from "./transport.js";
+import { formatCount } from "./format.js";
+import { parseRunConfig, serializeRunConfig } from "./url.js";
+import { SoundEngine, createMuteStore } from "./sound.js";
+import {
+  queryControls,
+  bindControls,
+  setMutationLabel,
+  setIntervalLabel,
+  setJitterLabel,
+  setPopulationLabel,
+  setSpeedLabel,
+  setPlayButtonState,
+  setMuteButtonState,
+} from "./controls.js";
 
 const canvas = document.getElementById("stage") as HTMLCanvasElement | null;
 if (!canvas) throw new Error("#stage canvas missing");
+const railEl = document.querySelector(".rail");
+if (!railEl) throw new Error(".rail missing");
+const rail: Element = railEl;
+const liveRegion = document.querySelector<HTMLElement>("[data-live]");
+const bloom = document.querySelector<HTMLElement>("[data-bloom]");
 
-const lineage = new Lineage("mitosis");
-let stage: Stage;
+const els = queryControls(document);
 
-const draw = (): void => {
-  const { ctx, width, height } = stage;
-  ctx.clearRect(0, 0, width, height);
+let storage: Storage | null = null;
+try {
+  storage = window.localStorage;
+} catch {
+  storage = null; // privacy mode can throw on access
+}
+const muteStore = createMuteStore(storage);
+const sound = new SoundEngine();
+sound.setMuted(muteStore.get());
+setMuteButtonState(els.muteBtn, sound.isMuted());
 
-  // Living cells drift outward from centre by generation — a crude bloom that
-  // shows the simulation is alive. The real radial-tree layout lands in BUILD.
-  const cx = width / 2;
-  const cy = height / 2;
-  for (const cell of lineage.cells) {
-    if (cell.divided) continue;
-    const ring = 18 + cell.generation * 26;
-    const angle = (cell.id * 2.399963) % (Math.PI * 2); // golden-angle spread
-    const x = cx + Math.cos(angle) * ring;
-    const y = cy + Math.sin(angle) * ring;
-    const r = 6 * cell.genome.size;
+let { seed, params } = parseRunConfig(window.location.search, DEFAULT_PARAMS);
+let lineage = new Lineage(seed, params);
+let speed = 1;
+let playing = false;
+let bloomShown = false;
+let lastMutations = 0;
 
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = `hsl(${cell.genome.hue} 90% 62%)`;
-    ctx.shadowBlur = 16;
-    ctx.shadowColor = `hsl(${cell.genome.hue} 90% 62%)`;
-    ctx.fill();
+const renderer = new TreeRenderer();
+const fixedLoop = new FixedStepLoop();
+const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+let reducedMotion = reducedMotionQuery.matches;
+reducedMotionQuery.addEventListener("change", (e) => {
+  reducedMotion = e.matches;
+});
+
+function announce(message: string): void {
+  if (liveRegion) liveRegion.textContent = message;
+}
+
+function syncUrl(): void {
+  const search = serializeRunConfig({ seed, params: lineage.params });
+  window.history.replaceState(null, "", `?${search}`);
+}
+
+function refreshParamLabels(): void {
+  setMutationLabel(rail, lineage.params.mutationRate.toFixed(2));
+  setIntervalLabel(rail, `${lineage.params.meanDivisionInterval.toFixed(1)}s`);
+  setJitterLabel(rail, lineage.params.divisionJitter.toFixed(2));
+  setPopulationLabel(rail, formatCount(lineage.params.maxPopulation));
+  setSpeedLabel(rail, formatSpeed(speed));
+}
+
+function syncSlidersToParams(): void {
+  els.mutation.valueAsNumber = lineage.params.mutationRate;
+  els.interval.valueAsNumber = lineage.params.meanDivisionInterval;
+  els.jitter.valueAsNumber = lineage.params.divisionJitter;
+  els.population.valueAsNumber = lineage.params.maxPopulation;
+  els.speed.valueAsNumber = speed;
+  els.seed.value = seed;
+  refreshParamLabels();
+}
+
+function hideBloom(): void {
+  bloomShown = false;
+  bloom?.setAttribute("hidden", "");
+}
+
+function showBloom(): void {
+  if (!bloom || bloomShown) return;
+  bloomShown = true;
+  const stats = lineage.stats();
+  bloom.querySelector('[data-bloom-stat="population"]')!.textContent =
+    formatCount(stats.population);
+  bloom.querySelector('[data-bloom-stat="generation"]')!.textContent =
+    formatCount(stats.maxGeneration);
+  bloom.querySelector('[data-bloom-stat="divisions"]')!.textContent =
+    formatCount(stats.divisions);
+  bloom.querySelector('[data-bloom-stat="mutations"]')!.textContent =
+    formatCount(stats.mutations);
+  bloom.querySelector('[data-bloom-stat="seed"]')!.textContent = seed;
+  bloom.removeAttribute("hidden");
+  sound.play("saturate");
+  playing = false;
+  setPlayButtonState(els.playBtn, playing);
+}
+
+function doReset(nextSeed: string): void {
+  seed = nextSeed;
+  lineage = new Lineage(seed, params);
+  renderer.reset();
+  fixedLoop.reset();
+  lastMutations = 0;
+  playing = false;
+  hideBloom();
+  setPlayButtonState(els.playBtn, playing);
+  syncSlidersToParams();
+  syncUrl();
+  announce(`Run reset with seed "${seed}"`);
+}
+
+function randomSeed(): string {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+async function shareRun(): Promise<void> {
+  const url = `${window.location.origin}${window.location.pathname}?${serializeRunConfig(
+    { seed, params: lineage.params },
+  )}`;
+  try {
+    await navigator.clipboard.writeText(url);
+    announce("Share link copied to clipboard");
+  } catch {
+    announce(url);
   }
-  ctx.shadowBlur = 0;
+}
+
+bindControls(els, {
+  onParamChange(patch: Partial<SimParams>) {
+    lineage.params = clampParams(patch, lineage.params);
+    params = lineage.params;
+    refreshParamLabels();
+    syncUrl();
+  },
+  onSpeedChange(value: number) {
+    speed = clampSpeed(value, speed);
+    setSpeedLabel(rail, formatSpeed(speed));
+  },
+  onSeedCommit(value: string) {
+    doReset(value.trim().length > 0 ? value.trim() : randomSeed());
+  },
+  onTogglePlay() {
+    playing = !playing;
+    setPlayButtonState(els.playBtn, playing);
+    sound.play("ui");
+  },
+  onStep() {
+    lineage.advance(lineage.params.meanDivisionInterval);
+    sound.play("ui");
+  },
+  onReset() {
+    doReset(seed);
+  },
+  onToggleMute() {
+    const muted = !sound.isMuted();
+    sound.setMuted(muted);
+    muteStore.set(muted);
+    setMuteButtonState(els.muteBtn, muted);
+  },
+  onShare() {
+    void shareRun();
+  },
+});
+
+document.getElementById("btn-bloom-share")?.addEventListener("click", () => {
+  void shareRun();
+});
+document.getElementById("btn-bloom-new")?.addEventListener("click", () => {
+  doReset(randomSeed());
+});
+
+const unlockAudio = (): void => {
+  sound.unlock();
+  window.removeEventListener("pointerdown", unlockAudio);
+  window.removeEventListener("keydown", unlockAudio);
 };
+window.addEventListener("pointerdown", unlockAudio);
+window.addEventListener("keydown", unlockAudio);
+
+syncSlidersToParams();
+setPlayButtonState(els.playBtn, playing);
+syncUrl();
 
 let last = 0;
+const stage = attachStage(canvas, () => {});
+
 const frame = (now: number): void => {
-  const dt = last ? Math.min((now - last) / 1000, 0.1) : 0;
+  const dtReal = last ? Math.min((now - last) / 1000, 0.1) : 0;
   last = now;
-  if (lineage.stats().population < 96) lineage.advance(dt);
-  draw();
+
+  if (playing && !bloomShown) {
+    fixedLoop.tick(dtReal * speed, (stepDt) => {
+      const fired = lineage.advance(stepDt);
+      if (fired > 0) sound.play("divide");
+      const stats = lineage.stats();
+      if (stats.mutations > lastMutations) sound.play("mutate");
+      lastMutations = stats.mutations;
+      if (stats.population >= lineage.params.maxPopulation) showBloom();
+    });
+  }
+
+  renderer.render(
+    stage.ctx,
+    lineage.cells,
+    { width: stage.width, height: stage.height },
+    now,
+    reducedMotion,
+  );
+
+  const stats = lineage.stats();
+  document.querySelector('[data-stat="population"]')!.textContent = formatCount(
+    stats.population,
+  );
+  document.querySelector('[data-stat="generation"]')!.textContent = formatCount(
+    stats.maxGeneration,
+  );
+  document.querySelector('[data-stat="divisions"]')!.textContent = formatCount(
+    stats.divisions,
+  );
+  document.querySelector('[data-stat="mutations"]')!.textContent = formatCount(
+    stats.mutations,
+  );
+
   requestAnimationFrame(frame);
 };
 
-stage = attachStage(canvas, () => draw());
 requestAnimationFrame(frame);
