@@ -1,5 +1,7 @@
 # Mitosis Lab
 
+[![CI](https://github.com/ctkrug/mitosis-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/ctkrug/mitosis-lab/actions/workflows/ci.yml)
+
 **An interactive cell-lineage simulator.** Seed a single cell, tune its biology —
 mutation rate, division timing, division jitter — and watch a living lineage tree
 branch and grow in real time. Every node is a cell; every fork is a division;
