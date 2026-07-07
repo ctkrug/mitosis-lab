@@ -296,3 +296,149 @@ h3,
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* Transport controls */
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px solid var(--line);
+}
+
+.transport button {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 160ms var(--ease), box-shadow 160ms var(--ease),
+    background 160ms var(--ease);
+}
+
+.transport button svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+.transport button:hover {
+  background: var(--surface-1);
+  box-shadow: 0 0 14px rgba(57, 245, 168, 0.4);
+}
+
+.transport button:active {
+  transform: scale(0.92);
+}
+
+.transport button:focus-visible {
+  outline: 2px solid var(--dapi);
+  outline-offset: 2px;
+}
+
+#btn-play {
+  background: var(--gfp);
+  color: var(--bg);
+  border-color: transparent;
+}
+
+#btn-play:hover {
+  background: var(--gfp);
+  box-shadow: 0 0 18px rgba(57, 245, 168, 0.7);
+}
+
+.ctl-speed {
+  flex: 1 1 auto;
+  min-width: 88px;
+}
+
+#btn-mute[aria-pressed="true"] .mute-x {
+  stroke: var(--danger);
+  stroke-width: 2;
+  opacity: 1;
+}
+
+#btn-mute .mute-x {
+  opacity: 0;
+  stroke: currentColor;
+  stroke-width: 2;
+  transition: opacity 160ms var(--ease);
+}
+
+/* Seed + share row */
+.seed-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.ctl-seed {
+  flex: 1 1 auto;
+}
+
+.ctl-seed input[type="text"] {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+
+.ctl-seed input[type="text"]:hover {
+  border-color: var(--gfp);
+}
+
+.ctl-seed input[type="text"]:focus-visible {
+  outline: none;
+  border-color: var(--dapi);
+  box-shadow: 0 0 0 3px rgba(91, 214, 255, 0.25);
+}
+
+#btn-share,
+#btn-bloom-share,
+#btn-bloom-new {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gfp);
+  background: transparent;
+  color: var(--gfp);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 160ms var(--ease), color 160ms var(--ease),
+    transform 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+
+#btn-share:hover,
+#btn-bloom-share:hover,
+#btn-bloom-new:hover {
+  background: var(--gfp);
+  color: var(--bg);
+  box-shadow: 0 0 16px rgba(57, 245, 168, 0.5);
+}
+
+#btn-share:active,
+#btn-bloom-share:active,
+#btn-bloom-new:active {
+  transform: scale(0.96);
+}
+
+#btn-share:focus-visible,
+#btn-bloom-share:focus-visible,
+#btn-bloom-new:focus-visible {
+  outline: 2px solid var(--dapi);
+  outline-offset: 2px;
+}
