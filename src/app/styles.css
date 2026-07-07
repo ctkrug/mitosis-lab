@@ -531,3 +531,70 @@ h3,
     animation: none;
   }
 }
+
+/* Phone / narrow viewport — rail becomes a bottom sheet, HUD shrinks and
+   centres, transport gets full-width tap targets. No horizontal scroll. */
+@media (max-width: 720px) {
+  .masthead {
+    top: 14px;
+    left: 14px;
+  }
+
+  .hud {
+    top: 14px;
+    right: 14px;
+    left: 14px;
+    grid-auto-flow: column;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 14px;
+  }
+
+  .hud-stat {
+    min-width: 0;
+  }
+
+  .hud-value {
+    font-size: 16px;
+  }
+
+  .rail {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: 46vh;
+    border-radius: var(--radius) var(--radius) 0 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .transport {
+    justify-content: space-between;
+  }
+
+  .transport button {
+    width: 48px;
+    height: 48px;
+  }
+
+  .seed-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 420px) {
+  .rail-group {
+    gap: 12px;
+  }
+
+  .bloom-card {
+    padding: 24px 20px;
+  }
+
+  .bloom-stats {
+    grid-template-columns: 1fr;
+  }
+}
