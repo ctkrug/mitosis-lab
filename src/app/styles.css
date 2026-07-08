@@ -3,6 +3,10 @@
  * Tokens mirror docs/DESIGN.md; keep the two in sync.
  */
 :root {
+  /* Dark-only design (see docs/DESIGN.md) — tell the browser so native
+     form controls and scrollbars render dark instead of defaulting light. */
+  color-scheme: dark;
+
   /* Specimen void + surfaces */
   --bg: #060f0d;
   --surface-1: #0c1a16;
