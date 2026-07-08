@@ -1,5 +1,25 @@
 import { describe, it, expect } from "vitest";
-import { setPlayButtonState, setMuteButtonState } from "../src/app/controls.js";
+import {
+  setPlayButtonState,
+  setMuteButtonState,
+  setMutationLabel,
+  setIntervalLabel,
+  setJitterLabel,
+  setPopulationLabel,
+  setSpeedLabel,
+} from "../src/app/controls.js";
+
+/** A minimal ParentNode stand-in exposing just the `[data-value]` spans the label setters target. */
+function makeFakeRail(keys: string[]) {
+  const spans = new Map(keys.map((k) => [k, { textContent: "" }]));
+  return {
+    querySelector(selector: string) {
+      const match = /\[data-value="(.+)"\]/.exec(selector);
+      return match ? (spans.get(match[1]) ?? null) : null;
+    },
+    spans,
+  } as unknown as ParentNode & { spans: Map<string, { textContent: string }> };
+}
 
 /**
  * A minimal stand-in for HTMLButtonElement covering only what
@@ -60,5 +80,27 @@ describe("setMuteButtonState", () => {
     setMuteButtonState(btn, false);
     expect(btn.getAttribute("aria-pressed")).toBe("false");
     expect(btn.getAttribute("aria-label")).toBe("Mute sound");
+  });
+});
+
+describe("value-label setters", () => {
+  it("writes each setter's text into its own [data-value] span, not a sibling's", () => {
+    const rail = makeFakeRail(["mutation", "interval", "jitter", "population", "speed"]);
+    setMutationLabel(rail, "0.25");
+    setIntervalLabel(rail, "2.2s");
+    setJitterLabel(rail, "0.35");
+    setPopulationLabel(rail, "512");
+    setSpeedLabel(rail, "1x");
+
+    expect(rail.spans.get("mutation")!.textContent).toBe("0.25");
+    expect(rail.spans.get("interval")!.textContent).toBe("2.2s");
+    expect(rail.spans.get("jitter")!.textContent).toBe("0.35");
+    expect(rail.spans.get("population")!.textContent).toBe("512");
+    expect(rail.spans.get("speed")!.textContent).toBe("1x");
+  });
+
+  it("does not throw when the target span is missing from the rail", () => {
+    const rail = makeFakeRail([]); // no matching [data-value] spans at all
+    expect(() => setMutationLabel(rail, "0.25")).not.toThrow();
   });
 });
