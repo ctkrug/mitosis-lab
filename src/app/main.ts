@@ -97,8 +97,12 @@ function syncSlidersToParams(): void {
 }
 
 function hideBloom(): void {
+  const wasShown = bloomShown;
   bloomShown = false;
   bloom?.setAttribute("hidden", "");
+  // Only steal focus when actually dismissing an open bloom (via "New seed") —
+  // a plain reset must not yank focus away from whatever the user just used.
+  if (wasShown) els.playBtn.focus();
 }
 
 function showBloom(): void {
@@ -118,6 +122,8 @@ function showBloom(): void {
   sound.play("saturate");
   playing = false;
   setPlayButtonState(els.playBtn, playing);
+  announce(`Colony saturated at ${formatCount(stats.population)} cells`);
+  document.getElementById("btn-bloom-share")?.focus();
 }
 
 function doReset(nextSeed: string): void {
