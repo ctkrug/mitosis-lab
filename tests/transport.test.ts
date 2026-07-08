@@ -53,4 +53,18 @@ describe("clampSpeed (property-based)", () => {
       ),
     );
   });
+
+  it("is idempotent: clamping an already-clamped speed is a no-op", () => {
+    fc.assert(
+      fc.property(
+        fc.double({ noNaN: false, noDefaultInfinity: false }),
+        fc.double({ min: -1e6, max: 1e6, noNaN: true }),
+        (value, fallback) => {
+          const once = clampSpeed(value, fallback);
+          const twice = clampSpeed(once, fallback);
+          expect(twice).toBe(once);
+        },
+      ),
+    );
+  });
 });
