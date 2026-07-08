@@ -47,15 +47,26 @@ export interface MuteStore {
 
 type StorageLike = Pick<Storage, "getItem" | "setItem">;
 
-/** A persisted mute flag; a `null` storage (unavailable) degrades to unmuted. */
+/**
+ * A persisted mute flag; a `null`, or a throwing (private-mode/quota-denied),
+ * storage degrades to unmuted rather than taking the app down with it.
+ */
 export function createMuteStore(storage: StorageLike | null): MuteStore {
   return {
     get(): boolean {
       if (!storage) return false;
-      return storage.getItem(MUTE_KEY) === "1";
+      try {
+        return storage.getItem(MUTE_KEY) === "1";
+      } catch {
+        return false;
+      }
     },
     set(muted: boolean): void {
-      storage?.setItem(MUTE_KEY, muted ? "1" : "0");
+      try {
+        storage?.setItem(MUTE_KEY, muted ? "1" : "0");
+      } catch {
+        // Storage denied (private mode, quota) — the flag just won't persist.
+      }
     },
   };
 }
