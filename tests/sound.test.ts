@@ -39,6 +39,14 @@ describe("createMuteStore", () => {
     expect(createMuteStore(storage).get()).toBe(true);
   });
 
+  it("persists and reads back an unmuted flag", () => {
+    const storage = new FakeStorage();
+    const store = createMuteStore(storage);
+    store.set(true);
+    store.set(false);
+    expect(store.get()).toBe(false);
+  });
+
   it("degrades to unmuted, no-op set, when storage is unavailable", () => {
     const store = createMuteStore(null);
     expect(store.get()).toBe(false);
@@ -71,4 +79,5 @@ describe("SoundEngine", () => {
       engine.play("divide", 20);
     }).not.toThrow();
   });
+
 });
