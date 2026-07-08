@@ -92,6 +92,18 @@ describe("fitCamera", () => {
     expect(Number.isFinite(t.y)).toBe(true);
   });
 
+  it("falls back to a finite transform when the viewport itself is non-finite", () => {
+    // A ResizeObserver/getBoundingClientRect glitch could hand back a NaN or
+    // Infinity dimension; the documented contract is "never NaN/Infinity."
+    const t = fitCamera(
+      { minX: 0, minY: 0, maxX: 10, maxY: 10 },
+      { width: NaN, height: 400 },
+    );
+    expect(Number.isFinite(t.scale)).toBe(true);
+    expect(Number.isFinite(t.x)).toBe(true);
+    expect(Number.isFinite(t.y)).toBe(true);
+  });
+
   it("centres the content: transforming the bounds centre lands at the viewport centre", () => {
     const bounds = { minX: 10, minY: 20, maxX: 30, maxY: 60 };
     const viewport = { width: 500, height: 500 };
