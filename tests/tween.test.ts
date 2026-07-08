@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import fc from "fast-check";
 import { clamp, lerp, easeOutCubic, damp } from "../src/app/tween.js";
 
 describe("clamp", () => {
@@ -57,5 +58,36 @@ describe("damp", () => {
     let chunked = 0;
     for (let i = 0; i < 100; i++) chunked = damp(chunked, 100, 6, 0.01);
     expect(Math.abs(whole - chunked)).toBeLessThan(0.5);
+  });
+});
+
+describe("damp (property-based)", () => {
+  it("always stays between current and target for non-negative lambda/dt", () => {
+    fc.assert(
+      fc.property(
+        fc.double({ min: -1e4, max: 1e4, noNaN: true }),
+        fc.double({ min: -1e4, max: 1e4, noNaN: true }),
+        fc.double({ min: 0, max: 50, noNaN: true }),
+        fc.double({ min: 0, max: 10, noNaN: true }),
+        (current, target, lambda, dt) => {
+          const result = damp(current, target, lambda, dt);
+          expect(Number.isFinite(result)).toBe(true);
+          expect(result).toBeGreaterThanOrEqual(Math.min(current, target) - 1e-6);
+          expect(result).toBeLessThanOrEqual(Math.max(current, target) + 1e-6);
+        },
+      ),
+    );
+  });
+});
+
+describe("easeOutCubic (property-based)", () => {
+  it("always returns a value in [0, 1] for any finite input", () => {
+    fc.assert(
+      fc.property(fc.double({ min: -1e6, max: 1e6, noNaN: true }), (t) => {
+        const v = easeOutCubic(t);
+        expect(v).toBeGreaterThanOrEqual(0);
+        expect(v).toBeLessThanOrEqual(1);
+      }),
+    );
   });
 });
