@@ -19,6 +19,22 @@ describe("inherit", () => {
     expect(genome).not.toBe(mother); // fresh object, not a shared reference
   });
 
+  it("never mutates at rate zero even when the rng lands exactly on 0", () => {
+    // rng.next() can legitimately return exactly 0 (mulberry32's output is
+    // [0, 1)), so the `< mutationRate` check must be a strict inequality —
+    // a `<=` mutant would fire here since 0 <= 0. A fixed real seed doesn't
+    // reliably land on this boundary, so stub the rng to force it.
+    const zeroRng = { next: () => 0, range: () => 0, gaussian: () => 0 };
+    const mother = seedGenome();
+    const { genome, mutations } = inherit(
+      mother,
+      { ...DEFAULT_PARAMS, mutationRate: 0 },
+      zeroRng,
+    );
+    expect(mutations).toBe(0);
+    expect(genome).toEqual(mother);
+  });
+
   it("always mutates when mutation rate is one", () => {
     const rng = makeRng(5);
     const { mutations } = inherit(
