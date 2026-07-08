@@ -16,6 +16,15 @@ describe("makeRng", () => {
     expect(a.next()).not.toEqual(b.next());
   });
 
+  it("does not degenerate into an all-zero stream for a zero seed", () => {
+    // mulberry32's internal state is falsy at a=0, which would otherwise
+    // produce a fixed low-quality sequence — makeRng special-cases it.
+    const r = makeRng(0);
+    const seq = Array.from({ length: 10 }, () => r.next());
+    expect(seq.every((v) => v >= 0 && v < 1)).toBe(true);
+    expect(new Set(seq).size).toBeGreaterThan(1);
+  });
+
   it("accepts string seeds via hashSeed", () => {
     const a = makeRng("mitosis");
     const b = makeRng(hashSeed("mitosis"));
