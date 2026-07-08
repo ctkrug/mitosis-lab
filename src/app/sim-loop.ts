@@ -34,7 +34,9 @@ export class FixedStepLoop {
    * number of steps taken this call.
    */
   tick(elapsedSeconds: number, onStep: (stepSeconds: number) => void): number {
-    if (elapsedSeconds > 0) this.accumulator += elapsedSeconds;
+    if (Number.isFinite(elapsedSeconds) && elapsedSeconds > 0) {
+      this.accumulator += elapsedSeconds;
+    }
     const { stepSeconds, maxStepsPerTick } = this.opts;
 
     let steps = 0;
