@@ -80,6 +80,19 @@ describe("Lineage", () => {
     expect(stats.time).toBe(0);
     expect(stats.divisions).toBe(0);
   });
+
+  it("ignores a negative dt instead of winding the clock backward", () => {
+    // dt is finite, so it passed the old `Number.isFinite(dt)`-only guard —
+    // but "advance by a negative number of seconds" is nonsensical for this
+    // API and would desync `time` from real elapsed time if it ever reached
+    // here (it can't today: FixedStepLoop and clampSpeed both keep the
+    // app's own dt non-negative, but Lineage.advance is a public method).
+    const lin = new Lineage("neg-dt", { maxPopulation: 64 });
+    lin.advance(5);
+    const fired = lin.advance(-3);
+    expect(fired).toBe(0);
+    expect(lin.stats().time).toBe(5);
+  });
 });
 
 describe("Lineage (property-based)", () => {
