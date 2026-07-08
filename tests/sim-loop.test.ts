@@ -44,6 +44,19 @@ describe("FixedStepLoop", () => {
     expect(loop.tick(0.7, () => {})).toBe(0);
   });
 
+  it("stays at zero pending when onStep calls reset() reentrantly", () => {
+    // site/preview.ts reseeds (calling fixedLoop.reset()) from inside the
+    // very onStep callback tick() is looping over. Without guarding for
+    // that, the loop unconditionally does `accumulator -= stepSeconds`
+    // after onStep returns, driving the just-reset (zeroed) accumulator
+    // negative — a real, if minor, extra delay before the next step fires.
+    const loop = new FixedStepLoop({ stepSeconds: 1 / 30 });
+    loop.tick(0.05, () => {
+      loop.reset();
+    });
+    expect(loop.pending()).toBe(0);
+  });
+
   it("ignores non-positive elapsed input without going backwards", () => {
     const loop = new FixedStepLoop({ stepSeconds: 1 });
     loop.tick(0.5, () => {});
