@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import fc from "fast-check";
 import { clampParam, clampParams, PARAM_RANGES } from "../src/app/params.js";
 import { DEFAULT_PARAMS } from "../src/sim/types.js";
 
@@ -49,5 +50,26 @@ describe("clampParams", () => {
     expect(result.meanDivisionInterval).toBe(PARAM_RANGES.meanDivisionInterval.max);
     expect(result.divisionJitter).toBe(DEFAULT_PARAMS.divisionJitter);
     expect(result.maxPopulation).toBe(PARAM_RANGES.maxPopulation.min);
+  });
+});
+
+describe("clampParam (property-based)", () => {
+  const keys = Object.keys(PARAM_RANGES) as Array<keyof typeof PARAM_RANGES>;
+
+  it("always lands within [min, max], even for wild or non-finite input", () => {
+    fc.assert(
+      fc.property(
+        fc.constantFrom(...keys),
+        fc.double({ noNaN: false, noDefaultInfinity: false }),
+        fc.double({ min: -1e6, max: 1e6, noNaN: true }),
+        (key, value, fallback) => {
+          const range = PARAM_RANGES[key];
+          const result = clampParam(key, value, fallback);
+          expect(result).toBeGreaterThanOrEqual(range.min);
+          expect(result).toBeLessThanOrEqual(range.max);
+          expect(Number.isFinite(result)).toBe(true);
+        },
+      ),
+    );
   });
 });
