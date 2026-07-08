@@ -92,6 +92,19 @@ Most modules pair hand-picked example tests with a `fast-check` property test
 (e.g. "clampParam always lands in [min, max] for any double, including
 NaN/±Infinity") — the invariant classes an example test is most likely to miss.
 
+**Non-finite-input gotcha:** a `<= 0` or `> 0` guard does *not* reject `NaN`
+(every NaN comparison is `false`), so it silently lets `NaN` through where a
+`Number.isFinite()` guard wouldn't. This bit `FixedStepLoop.tick` (an `Infinity`
+elapsed value passed the `> 0` check and permanently wedged the accumulator),
+`tween.damp` (a `NaN` dt/lambda passed the `<= 0` check and came out the far
+end as `NaN`), and `camera.fitCamera` (a non-finite `viewport.width/height`
+flowed straight into the returned `x`/`y` unguarded, even though `scale` and
+the bounds centre were already defended). When adding a numeric guard, prefer
+`Number.isFinite(x) && x > 0` over bare `x > 0`, and when property-testing a
+numeric module, fuzz with `noNaN: false, noDefaultInfinity: false` rather than
+`noNaN: true` unless the value is genuinely internal/pre-validated (e.g. a
+`fallback` parameter that's always already-clamped).
+
 ## Build entries
 
 `vite.config.ts` builds two HTML entries into one `dist/`: `index.html` (the
