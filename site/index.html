@@ -62,7 +62,7 @@
             A single seed cell divides on a stochastic clock, each daughter
             inheriting a mutated copy of its mother's genome. Run it forward
             and the exact structure biologists use to trace ancestry grows
-            live on your screen — not a static textbook diagram, a toy you
+            live on your screen. Not a static textbook diagram, a toy you
             drive.
           </p>
           <div class="hero-actions">
@@ -78,7 +78,7 @@
         </div>
         <div class="hero-stage" aria-hidden="true">
           <canvas id="preview" class="preview-canvas"></canvas>
-          <p class="preview-caption">live preview — autoplaying, no input needed</p>
+          <p class="preview-caption">live preview, autoplaying, no input needed</p>
         </div>
       </section>
 
@@ -91,7 +91,7 @@
               <h3>A seed cell divides on a stochastic clock</h3>
               <p>
                 Each cell's division timing is drawn from a mean interval
-                with jitter — real cells don't fire on a metronome, and
+                with jitter. Real cells don't fire on a metronome, and
                 neither does this one.
               </p>
             </div>
@@ -114,7 +114,7 @@
               <p>
                 A radial dendrogram partitions each parent's angular span
                 by subtree size, so hundreds of cells branch without ever
-                overlapping — while the camera keeps the whole colony in
+                overlapping, while the camera keeps the whole colony in
                 frame.
               </p>
             </div>
@@ -131,10 +131,44 @@
           <div class="knob"><span class="knob-name">Max population</span><p>Set the size of the saturation moment.</p></div>
         </div>
         <p class="knobs-note">
-          Every run is a pure function of its seed and these four params —
-          the seed lives in the URL, so a striking run is one link away
+          Every run is a pure function of its seed and these four params.
+          The seed lives in the URL, so a striking run is one link away
           from being shared exactly.
         </p>
+      </section>
+
+      <section class="faq-section" aria-label="Frequently asked questions">
+        <h2>Questions</h2>
+        <dl class="faq">
+          <dt>What is a cell-lineage tree?</dt>
+          <dd>
+            The branching diagram biologists use to trace which cell came from
+            which. The root is the founding cell, every fork is one division
+            into two daughters, and Mitosis Lab draws it live as the colony
+            grows.
+          </dd>
+
+          <dt>Is it scientifically accurate?</dt>
+          <dd>
+            It is a teaching model, not a research tool. It captures two real
+            ideas faithfully: stochastic division timing and inherited traits
+            that drift. It does not model a specific organism, cell-cycle
+            checkpoints, or cell death.
+          </dd>
+
+          <dt>What do the colours mean?</dt>
+          <dd>
+            Colour is an inherited trait that drifts when a mutation fires, so a
+            branch shifting from green toward cyan or magenta marks a sub-lineage
+            carrying that mutation.
+          </dd>
+
+          <dt>Do I need to install anything?</dt>
+          <dd>
+            No. It runs entirely in the browser, on desktop or phone, with
+            nothing to download and no account.
+          </dd>
+        </dl>
       </section>
 
       <section class="cta-band">
@@ -144,10 +178,15 @@
     </main>
 
     <footer class="site-footer">
-      <span>Mitosis Lab — Charlie Krug</span>
-      <a href="https://github.com/ctkrug/mitosis-lab" target="_blank" rel="noopener noreferrer"
-        >github.com/ctkrug/mitosis-lab</a
-      >
+      <span>Mitosis Lab, by Charlie Krug</span>
+      <span class="site-footer-links">
+        <a href="https://github.com/ctkrug/mitosis-lab" target="_blank" rel="noopener noreferrer"
+          >github.com/ctkrug/mitosis-lab</a
+        >
+        <a href="https://apps.charliekrug.com" target="_blank" rel="noopener noreferrer"
+          >More by Charlie Krug → apps.charliekrug.com</a
+        >
+      </span>
     </footer>
 
     <script type="module" src="./preview.ts"></script>
