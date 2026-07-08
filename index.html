@@ -209,6 +209,105 @@
         </div>
       </div>
     </main>
+
+    <!-- Below-the-fold: search-intent copy + FAQ, styled to match the app.
+         The stage above fills the first viewport; this scrolls into view. -->
+    <section class="about" aria-label="About Mitosis Lab">
+      <div class="about-inner">
+        <h2>What Mitosis Lab is</h2>
+        <p>
+          Mitosis Lab is a free, browser-based cell-lineage simulator. It starts
+          with one cell and lets you watch it divide, again and again, into a
+          branching family tree. Each division is stochastic, drawn from a mean
+          interval with jitter, and each daughter inherits a slightly mutated
+          copy of its mother's traits. The colony that grows is a genealogy you
+          can read: colour marks a sub-lineage, and distance from the centre
+          marks a generation. It is built for biology students, educators, and
+          anyone who likes a living system to poke at, and it runs entirely in
+          your browser with nothing to install.
+        </p>
+
+        <h3>How to use it</h3>
+        <ol class="about-steps">
+          <li>Press play to start the founding cell dividing.</li>
+          <li>
+            Drag mutation rate up to watch sub-lineages fan out into new
+            colours, or down to hold a single hue.
+          </li>
+          <li>
+            Change the division interval and jitter to move between a slow,
+            synchronised colony and a fast, staggered one.
+          </li>
+          <li>
+            Set a seed and share the URL. The seed and every parameter travel in
+            the link, so whoever opens it sees the exact same run.
+          </li>
+          <li>
+            Let the population reach its cap to trigger the colony-saturated
+            summary, then reseed for a fresh tree.
+          </li>
+        </ol>
+
+        <h3>FAQ</h3>
+        <dl class="faq">
+          <dt>What is a cell-lineage tree?</dt>
+          <dd>
+            It is the branching diagram biologists use to trace which cell came
+            from which. The root is the founding cell; every fork is one
+            division into two daughters. Mitosis Lab draws that tree live as the
+            colony grows.
+          </dd>
+
+          <dt>Is the simulation scientifically accurate?</dt>
+          <dd>
+            It is a teaching model, not a research tool. It captures two real
+            ideas faithfully: division timing is stochastic rather than
+            clockwork, and traits are inherited with drift. It does not model a
+            specific organism, cell-cycle checkpoints, or cell death.
+          </dd>
+
+          <dt>What do the colours mean?</dt>
+          <dd>
+            Colour is an inherited trait that drifts when a mutation fires. A
+            branch that shifts from green toward cyan or magenta marks a
+            sub-lineage carrying that mutation, so you can trace a mutation back
+            to the cell where it started.
+          </dd>
+
+          <dt>Why is every run reproducible?</dt>
+          <dd>
+            The whole simulation is a pure function of its seed and parameters,
+            driven by a seeded PRNG and a fixed timestep. The same seed and knobs
+            always produce the same tree, at any frame rate, which is why a
+            shared link recreates a run exactly.
+          </dd>
+
+          <dt>Does it work on a phone?</dt>
+          <dd>
+            Yes. The stage fills the top of the screen and the controls become a
+            bottom sheet, with touch targets sized for a thumb.
+          </dd>
+        </dl>
+
+        <div class="about-cta">
+          <a
+            class="about-btn"
+            href="https://github.com/ctkrug/mitosis-lab"
+            target="_blank"
+            rel="noopener noreferrer"
+            >View source on GitHub</a
+          >
+        </div>
+
+        <p class="about-more">
+          More by Charlie Krug →
+          <a href="https://apps.charliekrug.com" target="_blank" rel="noopener noreferrer"
+            >apps.charliekrug.com</a
+          >
+        </p>
+      </div>
+    </section>
+
     <script type="module" src="./src/app/main.ts"></script>
   </body>
 </html>
