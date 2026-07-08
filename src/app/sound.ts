@@ -99,7 +99,12 @@ export class SoundEngine {
       (window as unknown as { webkitAudioContext?: AudioContextCtor })
         .webkitAudioContext) as AudioContextCtor | undefined;
     if (!Ctor) return null;
-    this.ctx = new Ctor();
+    try {
+      this.ctx = new Ctor();
+    } catch {
+      // Hardware denied or context limit exceeded — degrade to silence.
+      return null;
+    }
     return this.ctx;
   }
 
