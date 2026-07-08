@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { setPlayButtonState } from "../src/app/controls.js";
+import { setPlayButtonState, setMuteButtonState } from "../src/app/controls.js";
 
 /**
  * A minimal stand-in for HTMLButtonElement covering only what
@@ -44,5 +44,21 @@ describe("setPlayButtonState", () => {
     expect(btn.innerHTMLWrites).toBe(1);
     setPlayButtonState(btn, false);
     expect(btn.innerHTMLWrites).toBe(1); // no second rebuild
+  });
+});
+
+describe("setMuteButtonState", () => {
+  it("reflects muted as a pressed toggle with an unmute label", () => {
+    const btn = makeFakeButton();
+    setMuteButtonState(btn, true);
+    expect(btn.getAttribute("aria-pressed")).toBe("true");
+    expect(btn.getAttribute("aria-label")).toBe("Unmute sound");
+  });
+
+  it("reflects unmuted as an unpressed toggle with a mute label", () => {
+    const btn = makeFakeButton();
+    setMuteButtonState(btn, false);
+    expect(btn.getAttribute("aria-pressed")).toBe("false");
+    expect(btn.getAttribute("aria-label")).toBe("Mute sound");
   });
 });
