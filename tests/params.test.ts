@@ -72,4 +72,19 @@ describe("clampParam (property-based)", () => {
       ),
     );
   });
+
+  it("is idempotent: clamping an already-clamped value is a no-op", () => {
+    fc.assert(
+      fc.property(
+        fc.constantFrom(...keys),
+        fc.double({ noNaN: false, noDefaultInfinity: false }),
+        fc.double({ min: -1e6, max: 1e6, noNaN: true }),
+        (key, value, fallback) => {
+          const once = clampParam(key, value, fallback);
+          const twice = clampParam(key, once, fallback);
+          expect(twice).toBe(once);
+        },
+      ),
+    );
+  });
 });
