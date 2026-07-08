@@ -32,11 +32,17 @@ main,
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 12px;
   padding: 24px clamp(20px, 5vw, 64px) 0;
 }
 
 .site-header .wordmark-o {
   animation-play-state: running;
+}
+
+.site-header .wordmark-text {
+  white-space: nowrap;
 }
 
 main {
