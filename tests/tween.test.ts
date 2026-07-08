@@ -12,6 +12,9 @@ describe("clamp", () => {
   it("clamps above the upper bound", () => {
     expect(clamp(99, 0, 10)).toBe(10);
   });
+  it("falls back to the lower bound instead of returning NaN", () => {
+    expect(clamp(NaN, 0, 10)).toBe(0);
+  });
 });
 
 describe("lerp", () => {
@@ -35,6 +38,9 @@ describe("easeOutCubic", () => {
   it("clamps inputs outside [0, 1]", () => {
     expect(easeOutCubic(-1)).toBe(0);
     expect(easeOutCubic(2)).toBe(1);
+  });
+  it("returns 0 instead of NaN for a NaN input", () => {
+    expect(easeOutCubic(NaN)).toBe(0);
   });
   it("front-loads progress (past the midpoint before t=0.5)", () => {
     expect(easeOutCubic(0.5)).toBeGreaterThan(0.5);
