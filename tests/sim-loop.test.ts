@@ -59,6 +59,17 @@ describe("FixedStepLoop", () => {
     expect(loop.pending()).toBeCloseTo(0.5, 10);
   });
 
+  it("ignores an Infinity elapsed input instead of permanently poisoning the accumulator", () => {
+    const loop = new FixedStepLoop({ stepSeconds: 1 / 30, maxStepsPerTick: 240 });
+    const first = loop.tick(Infinity, () => {});
+    expect(first).toBe(0);
+    expect(loop.pending()).toBe(0);
+    // A poisoned (Infinity) accumulator would fire maxStepsPerTick forever
+    // regardless of subsequent input; a healthy loop takes no steps for 0.
+    const second = loop.tick(0, () => {});
+    expect(second).toBe(0);
+  });
+
   it("total steps fired is independent of how elapsed time is chunked", () => {
     const totalReal = 2.03;
     const stepSeconds = 1 / 30;
