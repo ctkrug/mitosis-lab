@@ -104,7 +104,14 @@ export function setSpeedLabel(rail: ParentNode, text: string): void {
 }
 
 export function setPlayButtonState(btn: HTMLButtonElement, playing: boolean): void {
-  btn.setAttribute("aria-label", playing ? "Pause" : "Play");
+  const label = playing ? "Pause" : "Play";
+  // Skip the rebuild when nothing actually changed: a caller like doReset()
+  // sets this unconditionally, and if that lands mid-click (e.g. the seed
+  // field's blur-triggered "change" fires while the user is pressing this
+  // very button), replacing its child node out from under the pointer makes
+  // the browser drop the click entirely — the button just looks unresponsive.
+  if (btn.getAttribute("aria-label") === label) return;
+  btn.setAttribute("aria-label", label);
   btn.innerHTML = playing
     ? '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>'
     : '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 5l12 7-12 7z"/></svg>';
