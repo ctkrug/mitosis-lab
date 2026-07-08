@@ -53,6 +53,21 @@ describe("createMuteStore", () => {
     expect(() => store.set(true)).not.toThrow();
     expect(store.get()).toBe(false);
   });
+
+  it("degrades to unmuted, no-op set, when storage throws (private-mode/quota)", () => {
+    const throwingStorage: Pick<Storage, "getItem" | "setItem"> = {
+      getItem(): string | null {
+        throw new DOMException("access denied", "SecurityError");
+      },
+      setItem(): void {
+        throw new DOMException("access denied", "SecurityError");
+      },
+    };
+    const store = createMuteStore(throwingStorage);
+    expect(() => store.get()).not.toThrow();
+    expect(store.get()).toBe(false);
+    expect(() => store.set(true)).not.toThrow();
+  });
 });
 
 describe("SoundEngine", () => {
