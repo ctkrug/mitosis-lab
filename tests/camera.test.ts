@@ -139,4 +139,19 @@ describe("fitCamera", () => {
       ),
     );
   });
+
+  it("(property-based) never produces NaN/Infinity for any viewport, including non-finite", () => {
+    fc.assert(
+      fc.property(
+        fc.double({ noNaN: false, noDefaultInfinity: false }),
+        fc.double({ noNaN: false, noDefaultInfinity: false }),
+        (width, height) => {
+          const t = fitCamera({ minX: -5, minY: -5, maxX: 5, maxY: 5 }, { width, height });
+          expect(Number.isFinite(t.scale)).toBe(true);
+          expect(Number.isFinite(t.x)).toBe(true);
+          expect(Number.isFinite(t.y)).toBe(true);
+        },
+      ),
+    );
+  });
 });

@@ -69,6 +69,8 @@ export function fitCamera(
   opts: Partial<FitCameraOptions> = {},
 ): CameraTransform {
   const { padding, maxScale, minScale } = { ...DEFAULT_FIT_CAMERA, ...opts };
+  const vpWidth = Number.isFinite(viewport.width) ? viewport.width : 0;
+  const vpHeight = Number.isFinite(viewport.height) ? viewport.height : 0;
 
   const contentW = Math.max(bounds.maxX - bounds.minX, 0) + padding * 2;
   const contentH = Math.max(bounds.maxY - bounds.minY, 0) + padding * 2;
@@ -78,15 +80,15 @@ export function fitCamera(
   const centerY = Number.isFinite(rawCenterY) ? rawCenterY : 0;
 
   let scale =
-    viewport.width > 0 && viewport.height > 0 && contentW > 0 && contentH > 0
-      ? Math.min(viewport.width / contentW, viewport.height / contentH)
+    vpWidth > 0 && vpHeight > 0 && contentW > 0 && contentH > 0
+      ? Math.min(vpWidth / contentW, vpHeight / contentH)
       : maxScale;
   if (!Number.isFinite(scale) || scale <= 0) scale = maxScale;
   scale = Math.min(maxScale, Math.max(minScale, scale));
 
   return {
     scale,
-    x: viewport.width / 2 - centerX * scale,
-    y: viewport.height / 2 - centerY * scale,
+    x: vpWidth / 2 - centerX * scale,
+    y: vpHeight / 2 - centerY * scale,
   };
 }
