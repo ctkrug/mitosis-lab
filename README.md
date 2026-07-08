@@ -41,8 +41,9 @@ that forward and you get a branching tree — the same structure biologists draw
 - **Auto-fit camera** — the view zooms/pans to keep the whole growing tree in
   frame without any input.
 
-Still ahead: a landing page sharing the app's brand and a real-browser QA pass
-(resize/hover/focus/play-through) — see `docs/BACKLOG.md` for the live list.
+- **Landing page** — `site/` shares the app's brand and tokens, with its own
+  live/looping preview (a real, headless run of the same sim + renderer) and a
+  "Launch the lab" CTA into the app.
 
 ## Stack
 
@@ -70,9 +71,9 @@ npm run build    # static bundle in dist/
 
 ## Status
 
-The wow moment, biology controls, transport, and juice/sound/celebration
-epics are built and unit-tested (13 of 17 backlog stories). See
-[`docs/VISION.md`](docs/VISION.md) for the plan,
+All 17 backlog stories across all 4 epics are built, unit-tested, and verified
+in a real browser (resize/focus/contrast pass, plus a full played-through run).
+See [`docs/VISION.md`](docs/VISION.md) for the plan,
 [`docs/BACKLOG.md`](docs/BACKLOG.md) for the epic/story breakdown (with
 verification notes per story), [`docs/DESIGN.md`](docs/DESIGN.md) for the art
 direction, and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the module map.
