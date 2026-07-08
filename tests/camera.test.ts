@@ -113,6 +113,19 @@ describe("fitCamera", () => {
     expect(Number.isFinite(t.y)).toBe(true);
   });
 
+  it("falls back the same way when only the Y axis is non-finite", () => {
+    // The X-axis case above exercises centerX's fallback; centerY has its
+    // own identical guard that a mirrored test could otherwise miss.
+    const t = fitCamera(
+      { minX: 0, minY: 0, maxX: 10, maxY: Infinity },
+      { width: 400, height: 400 },
+      { maxScale: 2.5 },
+    );
+    expect(t.scale).toBe(2.5);
+    expect(Number.isFinite(t.x)).toBe(true);
+    expect(Number.isFinite(t.y)).toBe(true);
+  });
+
   it("falls back to a finite transform when the viewport itself is non-finite", () => {
     // A ResizeObserver/getBoundingClientRect glitch could hand back a NaN or
     // Infinity dimension; the documented contract is "never NaN/Infinity."
