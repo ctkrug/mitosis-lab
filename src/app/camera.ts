@@ -72,8 +72,10 @@ export function fitCamera(
 
   const contentW = Math.max(bounds.maxX - bounds.minX, 0) + padding * 2;
   const contentH = Math.max(bounds.maxY - bounds.minY, 0) + padding * 2;
-  const centerX = (bounds.minX + bounds.maxX) / 2;
-  const centerY = (bounds.minY + bounds.maxY) / 2;
+  const rawCenterX = (bounds.minX + bounds.maxX) / 2;
+  const rawCenterY = (bounds.minY + bounds.maxY) / 2;
+  const centerX = Number.isFinite(rawCenterX) ? rawCenterX : 0;
+  const centerY = Number.isFinite(rawCenterY) ? rawCenterY : 0;
 
   let scale =
     viewport.width > 0 && viewport.height > 0 && contentW > 0 && contentH > 0
