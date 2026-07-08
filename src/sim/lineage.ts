@@ -92,7 +92,7 @@ export class Lineage {
    * driving per-division feedback like sound and pops).
    */
   advance(dt: number): number {
-    if (!Number.isFinite(dt)) return 0;
+    if (!Number.isFinite(dt) || dt < 0) return 0;
     this.time += dt;
     let fired = 0;
 
