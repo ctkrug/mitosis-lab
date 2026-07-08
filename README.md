@@ -88,10 +88,10 @@ npx vite-node scripts/render-sample.ts
 
 ## Documentation
 
-- [`docs/VISION.md`](docs/VISION.md) — why it exists and who it's for.
-- [`docs/DESIGN.md`](docs/DESIGN.md) — the darkfield-microscopy art direction and tokens.
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — module map, data flow, and gotchas.
-- [`docs/BACKLOG.md`](docs/BACKLOG.md) — the epic and story breakdown with verification notes.
+- [`docs/VISION.md`](docs/VISION.md): why it exists and who it's for.
+- [`docs/DESIGN.md`](docs/DESIGN.md): the darkfield-microscopy art direction and tokens.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): module map, data flow, and gotchas.
+- [`docs/BACKLOG.md`](docs/BACKLOG.md): the epic and story breakdown with verification notes.
 
 ## License
 
