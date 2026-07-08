@@ -103,7 +103,25 @@ the bounds centre were already defended). When adding a numeric guard, prefer
 `Number.isFinite(x) && x > 0` over bare `x > 0`, and when property-testing a
 numeric module, fuzz with `noNaN: false, noDefaultInfinity: false` rather than
 `noNaN: true` unless the value is genuinely internal/pre-validated (e.g. a
-`fallback` parameter that's always already-clamped).
+`fallback` parameter that's always already-clamped). The inverse mistake is
+just as easy to make: `Lineage.advance` checked `Number.isFinite(dt)` alone,
+which happily accepts a finite *negative* dt and winds the simulation clock
+backward — a bare finiteness check isn't a full validity check on its own,
+it just rules out the NaN/Infinity failure mode specifically.
+
+**DOM-mutation-eats-the-click gotcha:** a browser only fires `click` if the
+element that received `mousedown` is still connected (and visible) at
+`mouseup`; if it's replaced or removed in between, the click is silently
+dropped — no error, the control just looks unresponsive. `setPlayButtonState`
+rebuilt the play button's icon via `btn.innerHTML = ...` on every call,
+including `doReset()`'s unconditional "not playing" call; typing a seed and
+immediately clicking Play (no blur first) let the seed field's blur-triggered
+`change` event land between that click's mousedown and mouseup, rebuilding
+the pressed node out from under the pointer. The fix: skip the rebuild when
+the requested state already matches what's shown (see `controls.ts`). Any
+button whose contents get reassigned from application state, not just user
+interaction with that button, is at risk of this — prefer no-op'ing on an
+unchanged state over blanket `innerHTML` replacement for anything clickable.
 
 ## Build entries
 
