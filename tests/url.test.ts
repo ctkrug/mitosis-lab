@@ -29,8 +29,29 @@ describe("parseRunConfig", () => {
     expect(config.seed).toBe(DEFAULT_SEED);
   });
 
+  it("falls back to the default seed for a whitespace-only seed param", () => {
+    const config = parseRunConfig("?seed=%20%20%20", DEFAULT_PARAMS);
+    expect(config.seed).toBe(DEFAULT_SEED);
+  });
+
+  it("treats a falsy-looking seed like \"0\" as a real, distinct seed", () => {
+    const config = parseRunConfig("?seed=0", DEFAULT_PARAMS);
+    expect(config.seed).toBe("0");
+  });
+
   it("falls back to defaults for malformed numeric params", () => {
     const config = parseRunConfig("?mutation=not-a-number", DEFAULT_PARAMS);
+    expect(config.params.mutationRate).toBe(DEFAULT_PARAMS.mutationRate);
+  });
+
+  it("falls back to defaults for non-finite numeric params (Infinity/NaN)", () => {
+    const config = parseRunConfig(
+      "?interval=Infinity&mutation=NaN",
+      DEFAULT_PARAMS,
+    );
+    expect(config.params.meanDivisionInterval).toBe(
+      DEFAULT_PARAMS.meanDivisionInterval,
+    );
     expect(config.params.mutationRate).toBe(DEFAULT_PARAMS.mutationRate);
   });
 
