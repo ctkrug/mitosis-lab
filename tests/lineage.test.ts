@@ -53,4 +53,11 @@ describe("Lineage", () => {
     lin.advance(0.001); // essentially no time passed
     expect(lin.stats().divisions).toBe(0);
   });
+
+  it("divides a cell exactly at its scheduled time, not only after", () => {
+    const lin = new Lineage("boundary", { maxPopulation: 8 });
+    const divideAt = lin.cells[0].divideAt;
+    lin.advance(divideAt); // time lands exactly on the seed's divideAt
+    expect(lin.stats().divisions).toBe(1);
+  });
 });
