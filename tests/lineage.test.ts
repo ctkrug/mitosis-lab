@@ -60,4 +60,14 @@ describe("Lineage", () => {
     lin.advance(divideAt); // time lands exactly on the seed's divideAt
     expect(lin.stats().divisions).toBe(1);
   });
+
+  it("ignores a non-finite dt instead of corrupting time and mass-dividing", () => {
+    const lin = new Lineage("nan-dt", { maxPopulation: 64 });
+    const fired = lin.advance(NaN);
+    expect(fired).toBe(0);
+    const stats = lin.stats();
+    expect(stats.time).toBe(0);
+    expect(stats.divisions).toBe(0);
+    expect(stats.population).toBe(1);
+  });
 });
