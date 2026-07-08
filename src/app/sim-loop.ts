@@ -42,7 +42,11 @@ export class FixedStepLoop {
     let steps = 0;
     while (this.accumulator >= stepSeconds && steps < maxStepsPerTick) {
       onStep(stepSeconds);
-      this.accumulator -= stepSeconds;
+      // Clamp rather than a bare subtraction: onStep can call reset()
+      // reentrantly (e.g. a reseed on saturation), and blindly subtracting
+      // stepSeconds from an accumulator that onStep just zeroed would drive
+      // it negative, delaying the next real step by an extra frame.
+      this.accumulator = Math.max(0, this.accumulator - stepSeconds);
       steps++;
     }
     return steps;
