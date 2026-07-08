@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import fc from "fast-check";
 import { clampSpeed, formatSpeed, SPEED_RANGE } from "../src/app/transport.js";
 
 describe("clampSpeed", () => {
@@ -34,5 +35,22 @@ describe("formatSpeed", () => {
 
   it("rounds to two decimal places", () => {
     expect(formatSpeed(1.005)).toBe("1×");
+  });
+});
+
+describe("clampSpeed (property-based)", () => {
+  it("always lands within SPEED_RANGE for any value or fallback, finite or not", () => {
+    fc.assert(
+      fc.property(
+        fc.double({ noNaN: false, noDefaultInfinity: false }),
+        fc.double({ min: -1e6, max: 1e6, noNaN: true }),
+        (value, fallback) => {
+          const v = clampSpeed(value, fallback);
+          expect(v).toBeGreaterThanOrEqual(SPEED_RANGE.min);
+          expect(v).toBeLessThanOrEqual(SPEED_RANGE.max);
+          expect(Number.isFinite(v)).toBe(true);
+        },
+      ),
+    );
   });
 });
