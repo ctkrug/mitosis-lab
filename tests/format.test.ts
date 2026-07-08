@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import fc from "fast-check";
 import { formatCount } from "../src/app/format.js";
 
 describe("formatCount", () => {
@@ -21,5 +22,19 @@ describe("formatCount", () => {
   it("falls back to an em dash for non-finite input", () => {
     expect(formatCount(NaN)).toBe("—");
     expect(formatCount(Infinity)).toBe("—");
+  });
+});
+
+describe("formatCount (property-based)", () => {
+  it("never throws and always returns digits+separators or the em dash", () => {
+    fc.assert(
+      fc.property(
+        fc.double({ noNaN: false, noDefaultInfinity: false }),
+        (value) => {
+          const result = formatCount(value);
+          expect(/^([\d,]+|—)$/.test(result)).toBe(true);
+        },
+      ),
+    );
   });
 });
