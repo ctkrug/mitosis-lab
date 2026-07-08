@@ -78,6 +78,19 @@ describe("fitCamera", () => {
     expect(t.scale).toBe(0.1);
   });
 
+  it("falls back to maxScale instead of NaN when bounds are non-finite", () => {
+    // A corrupt/degenerate bounds box (e.g. from a bad render frame) must
+    // never propagate NaN into the camera transform.
+    const t = fitCamera(
+      { minX: 0, minY: 0, maxX: Infinity, maxY: 10 },
+      { width: 400, height: 400 },
+      { maxScale: 2.5 },
+    );
+    expect(t.scale).toBe(2.5);
+    expect(Number.isFinite(t.x)).toBe(true);
+    expect(Number.isFinite(t.y)).toBe(true);
+  });
+
   it("centres the content: transforming the bounds centre lands at the viewport centre", () => {
     const bounds = { minX: 10, minY: 20, maxX: 30, maxY: 60 };
     const viewport = { width: 500, height: 500 };
