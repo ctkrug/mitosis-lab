@@ -131,6 +131,25 @@ describe("computeRadialLayout", () => {
     expect(computeRadialLayout(cells).size).toBe(0);
   });
 
+  it("does not throw when a cell appears before its parent (out-of-birth-order input)", () => {
+    // computeWeights walks the array in reverse assuming a parent always
+    // precedes its children (true for real Lineage output), so it can compute
+    // each node's leaf-count weight bottom-up in one pass. A child listed
+    // *before* its parent breaks that assumption — the parent gets processed
+    // before its child's weight exists yet, hitting the "?? 1" fallback
+    // instead of the real subtree weight. Layout should still place every
+    // cell without throwing, just with a possibly-off angular split.
+    const cells = [
+      makeCell({ id: 1, parentId: 0, generation: 1 }),
+      makeCell({ id: 0, generation: 0, divided: true }),
+    ];
+    expect(() => computeRadialLayout(cells)).not.toThrow();
+    const layout = computeRadialLayout(cells);
+    expect(layout.size).toBe(2);
+    expect(layout.has(0)).toBe(true);
+    expect(layout.has(1)).toBe(true);
+  });
+
   it("never overlaps two sibling subtrees' angular ranges", () => {
     const lineage = new Lineage("no-overlap", { maxPopulation: 256 });
     lineage.advance(2000);
