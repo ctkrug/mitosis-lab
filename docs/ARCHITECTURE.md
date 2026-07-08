@@ -83,9 +83,14 @@ DOM/Canvas code that's expensive to unit test and cheap to read directly.
 npm install
 npm run dev        # http://localhost:5173
 npm test           # vitest — pure sim + app-math modules, one file per module
+npm run test:coverage  # vitest --coverage
 npm run typecheck  # tsc --noEmit (strict)
 npm run build      # tsc --noEmit && vite build -> dist/ (relative paths, base: "./")
 ```
+
+Most modules pair hand-picked example tests with a `fast-check` property test
+(e.g. "clampParam always lands in [min, max] for any double, including
+NaN/±Infinity") — the invariant classes an example test is most likely to miss.
 
 ## Build entries
 
