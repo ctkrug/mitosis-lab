@@ -71,6 +71,15 @@ describe("Lineage", () => {
     expect(stats.divisions).toBe(0);
     expect(stats.population).toBe(1);
   });
+
+  it("ignores an Infinity dt the same way it ignores NaN", () => {
+    const lin = new Lineage("inf-dt", { maxPopulation: 64 });
+    expect(lin.advance(Infinity)).toBe(0);
+    expect(lin.advance(-Infinity)).toBe(0);
+    const stats = lin.stats();
+    expect(stats.time).toBe(0);
+    expect(stats.divisions).toBe(0);
+  });
 });
 
 describe("Lineage (property-based)", () => {
