@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import fc from "fast-check";
 import { makeRng, hashSeed } from "../src/sim/rng.js";
 
 describe("makeRng", () => {
@@ -59,5 +60,34 @@ describe("makeRng", () => {
       sum += v;
     }
     expect(Math.abs(sum / n)).toBeLessThan(0.1);
+  });
+});
+
+describe("makeRng (property-based)", () => {
+  it("range(min, max) always stays within [min, max) for any seed and bounds", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0, max: 0xffffffff }),
+        fc.double({ min: -1e6, max: 1e6, noNaN: true }),
+        fc.double({ min: 0.001, max: 1e6, noNaN: true }),
+        (seed, min, span) => {
+          const max = min + span;
+          const v = makeRng(seed).range(min, max);
+          expect(v).toBeGreaterThanOrEqual(min);
+          expect(v).toBeLessThan(max);
+        },
+      ),
+    );
+  });
+
+  it("hashSeed always produces a finite non-negative 32-bit integer for any string", () => {
+    fc.assert(
+      fc.property(fc.string(), (seed) => {
+        const h = hashSeed(seed);
+        expect(Number.isInteger(h)).toBe(true);
+        expect(h).toBeGreaterThanOrEqual(0);
+        expect(h).toBeLessThanOrEqual(0xffffffff);
+      }),
+    );
   });
 });
