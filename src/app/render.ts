@@ -43,6 +43,8 @@ export class TreeRenderer {
   private ripples: Ripple[] = [];
   private pulses: Pulse[] = [];
   private lastFrameAt: number | null = null;
+  private cachedLayout: Map<number, LayoutNode> | null = null;
+  private cachedLayoutSize = -1;
 
   /** Drop all remembered state — call on reset/reseed. */
   reset(): void {
@@ -52,6 +54,24 @@ export class TreeRenderer {
     this.ripples = [];
     this.pulses = [];
     this.lastFrameAt = null;
+    this.cachedLayout = null;
+    this.cachedLayoutSize = -1;
+  }
+
+  /**
+   * The radial layout only depends on each cell's id/parentId/generation,
+   * none of which ever change after a cell is created — cells are only ever
+   * appended, never mutated in a layout-relevant way or removed. So it's
+   * safe (and, at a few hundred cells, meaningfully cheaper per frame) to
+   * skip recomputing it on frames where no new cell has been born.
+   */
+  private layoutFor(cells: Cell[]): Map<number, LayoutNode> {
+    if (this.cachedLayout && cells.length === this.cachedLayoutSize) {
+      return this.cachedLayout;
+    }
+    this.cachedLayout = computeRadialLayout(cells);
+    this.cachedLayoutSize = cells.length;
+    return this.cachedLayout;
   }
 
   render(
@@ -64,7 +84,7 @@ export class TreeRenderer {
     const dt = this.lastFrameAt === null ? 0 : (nowMs - this.lastFrameAt) / 1000;
     this.lastFrameAt = nowMs;
 
-    const layout = computeRadialLayout(cells);
+    const layout = this.layoutFor(cells);
     const byId = new Map(cells.map((c) => [c.id, c]));
     this.trackBirthsAndFeedback(cells, byId, layout, nowMs, reducedMotion);
     this.updateCamera(layout, viewport, dt);
