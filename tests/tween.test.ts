@@ -17,6 +17,45 @@ describe("clamp", () => {
   });
 });
 
+describe("clamp (property-based)", () => {
+  it("always lands within [lo, hi] for any v, including NaN/±Infinity", () => {
+    fc.assert(
+      fc.property(
+        fc.double({ noNaN: false, noDefaultInfinity: false }),
+        fc.tuple(
+          fc.double({ min: -1e6, max: 1e6, noNaN: true }),
+          fc.double({ min: -1e6, max: 1e6, noNaN: true }),
+        ),
+        (v, [a, b]) => {
+          const lo = Math.min(a, b);
+          const hi = Math.max(a, b);
+          const result = clamp(v, lo, hi);
+          expect(result).toBeGreaterThanOrEqual(lo);
+          expect(result).toBeLessThanOrEqual(hi);
+        },
+      ),
+    );
+  });
+
+  it("is idempotent: clamping an already-clamped value is a no-op", () => {
+    fc.assert(
+      fc.property(
+        fc.double({ noNaN: false, noDefaultInfinity: false }),
+        fc.tuple(
+          fc.double({ min: -1e6, max: 1e6, noNaN: true }),
+          fc.double({ min: -1e6, max: 1e6, noNaN: true }),
+        ),
+        (v, [a, b]) => {
+          const lo = Math.min(a, b);
+          const hi = Math.max(a, b);
+          const once = clamp(v, lo, hi);
+          expect(clamp(once, lo, hi)).toBe(once);
+        },
+      ),
+    );
+  });
+});
+
 describe("lerp", () => {
   it("returns a at t=0 and b at t=1", () => {
     expect(lerp(2, 8, 0)).toBe(2);
