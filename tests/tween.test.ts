@@ -59,6 +59,14 @@ describe("damp", () => {
     for (let i = 0; i < 100; i++) chunked = damp(chunked, 100, 6, 0.01);
     expect(Math.abs(whole - chunked)).toBeLessThan(0.5);
   });
+  it("snaps to the target for an infinite dt or lambda instead of corrupting", () => {
+    expect(damp(0, 100, 8, Infinity)).toBe(100);
+    expect(damp(0, 100, Infinity, 1)).toBe(100);
+  });
+  it("holds position instead of corrupting to NaN for a NaN dt or lambda", () => {
+    expect(damp(0, 100, 8, NaN)).toBe(0);
+    expect(damp(0, 100, NaN, 1)).toBe(0);
+  });
 });
 
 describe("damp (property-based)", () => {
