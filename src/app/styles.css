@@ -541,7 +541,9 @@ h3,
   }
 
   .hud {
-    top: 14px;
+    /* Full-width below the masthead, not stacked on the same corner — at
+       this width the two would otherwise overlap (see docs/BACKLOG.md 4.4). */
+    top: 46px;
     right: 14px;
     left: 14px;
     grid-auto-flow: column;
