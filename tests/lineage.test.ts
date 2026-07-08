@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import fc from "fast-check";
 import { Lineage } from "../src/sim/lineage.js";
 
 describe("Lineage", () => {
@@ -69,5 +70,27 @@ describe("Lineage", () => {
     expect(stats.time).toBe(0);
     expect(stats.divisions).toBe(0);
     expect(stats.population).toBe(1);
+  });
+});
+
+describe("Lineage (property-based)", () => {
+  it("never exceeds maxPopulation for any seed, jitter, or division bias", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0, max: 0xffffffff }),
+        fc.integer({ min: 8, max: 256 }),
+        fc.double({ min: 0, max: 1, noNaN: true }),
+        fc.double({ min: 0.3, max: 4, noNaN: true }),
+        (seed, maxPopulation, divisionJitter, meanDivisionInterval) => {
+          const lin = new Lineage(seed, {
+            maxPopulation,
+            divisionJitter,
+            meanDivisionInterval,
+          });
+          lin.advance(10_000);
+          expect(lin.stats().population).toBeLessThanOrEqual(maxPopulation);
+        },
+      ),
+    );
   });
 });
