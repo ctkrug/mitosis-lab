@@ -7,5 +7,13 @@ export default defineConfig({
   build: {
     outDir: "dist",
     target: "es2020",
+    // Two HTML entry points sharing one bundle: the simulator at the root and
+    // the marketing landing page under site/, so both ship from one `dist/`.
+    rollupOptions: {
+      input: {
+        app: "index.html",
+        site: "site/index.html",
+      },
+    },
   },
 });
