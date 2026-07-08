@@ -29,7 +29,16 @@ src/
     controls.ts     DOM binding for the control rail (queryControls/bindControls)
     canvas.ts       attachStage — devicePixelRatio canvas sizing
     main.ts         entry point: wires everything above together
-    styles.css      darkfield-microscopy tokens + layout (docs/DESIGN.md)
+    styles.css      darkfield-microscopy tokens + layout (docs/DESIGN.md) —
+                    single source of the shared tokens; site/ links this file
+                    directly rather than duplicating it
+site/             marketing landing page — same brand as the app, separate entry
+  index.html        hero, "how it works", knobs, CTA band; links ../src/app/styles.css
+                    for tokens/wordmark plus its own styles.css for page layout
+  styles.css        landing-page-only layout (hero grid, steps, knob cards, footer)
+  preview.ts        drives the hero canvas with a real (not decorative) Lineage +
+                    TreeRenderer + FixedStepLoop, auto-playing and reseeding on
+                    saturation — no controls, sound, or URL state
 tests/            one *.test.ts per src/**/*.ts pure module (mirrors the file it covers)
 index.html        static shell: canvas stage, wordmark, HUD, control rail, bloom overlay
 ```
@@ -78,10 +87,10 @@ npm run typecheck  # tsc --noEmit (strict)
 npm run build      # tsc --noEmit && vite build -> dist/ (relative paths, base: "./")
 ```
 
-## Known gap
+## Build entries
 
-No story here has been exercised in an actual browser yet — this build ran in
-an environment with no browser automation tool, so `npm run build`/`typecheck`/
-`test` are the only checks that ran. The design self-review (resize at
-390/768/1440, hover/focus states, a full play-through with sound) is still
-outstanding; see `docs/BACKLOG.md` story 4.4.
+`vite.config.ts` builds two HTML entries into one `dist/`: `index.html` (the
+app, at the root) and `site/index.html` (the landing page, under `dist/site/`).
+Both share the same asset graph — `site/preview.ts` imports straight from
+`src/sim/` and `src/app/`, so the landing page's hero preview is a real, tiny
+run of the actual simulation rather than a separate reimplementation.
