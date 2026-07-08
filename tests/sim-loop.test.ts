@@ -51,6 +51,14 @@ describe("FixedStepLoop", () => {
     expect(loop.pending()).toBeCloseTo(0.5, 10);
   });
 
+  it("ignores a NaN elapsed input instead of corrupting the accumulator", () => {
+    const loop = new FixedStepLoop({ stepSeconds: 1 });
+    loop.tick(0.5, () => {});
+    const steps = loop.tick(NaN, () => {});
+    expect(steps).toBe(0);
+    expect(loop.pending()).toBeCloseTo(0.5, 10);
+  });
+
   it("total steps fired is independent of how elapsed time is chunked", () => {
     const totalReal = 2.03;
     const stepSeconds = 1 / 30;
