@@ -85,8 +85,7 @@ export class TreeRenderer {
     this.lastFrameAt = nowMs;
 
     const layout = this.layoutFor(cells);
-    const byId = new Map(cells.map((c) => [c.id, c]));
-    this.trackBirthsAndFeedback(cells, byId, layout, nowMs, reducedMotion);
+    this.trackBirthsAndFeedback(cells, layout, nowMs, reducedMotion);
     this.updateCamera(layout, viewport, dt);
 
     ctx.clearRect(0, 0, viewport.width, viewport.height);
@@ -105,7 +104,6 @@ export class TreeRenderer {
 
   private trackBirthsAndFeedback(
     cells: Cell[],
-    byId: Map<number, Cell>,
     layout: Map<number, LayoutNode>,
     nowMs: number,
     reducedMotion: boolean,
@@ -119,7 +117,11 @@ export class TreeRenderer {
       if (!node) continue;
 
       if (isNew && cell.parentId !== null) {
-        const parent = byId.get(cell.parentId);
+        // Cells are appended in birth order with a monotonically increasing
+        // id (see layout.ts's computeWeights comment for the same
+        // invariant), so a parent always sits at `cells[cell.parentId]` —
+        // no need to build an id -> cell Map every frame just for this.
+        const parent = cells[cell.parentId];
         if (parent && cell.mutationLoad > parent.mutationLoad) {
           this.ripples.push({ x: node.x, y: node.y, startedAt: nowMs, kind: "mutate" });
         }
