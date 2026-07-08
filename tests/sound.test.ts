@@ -210,5 +210,17 @@ describe("SoundEngine", () => {
       const engine = new SoundEngine();
       expect(() => engine.unlock()).not.toThrow();
     });
+
+    it("degrades to silence when constructing AudioContext throws", () => {
+      class ThrowingCtx {
+        constructor() {
+          throw new DOMException("audio hardware unavailable", "NotAllowedError");
+        }
+      }
+      vi.stubGlobal("window", { AudioContext: ThrowingCtx });
+      const engine = new SoundEngine();
+      expect(() => engine.play("ui", 0)).not.toThrow();
+      expect(() => engine.unlock()).not.toThrow();
+    });
   });
 });
