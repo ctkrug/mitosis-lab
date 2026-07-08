@@ -86,6 +86,21 @@ describe("damp (property-based)", () => {
       ),
     );
   });
+
+  it("never returns NaN for any dt/lambda, including NaN and Infinity", () => {
+    fc.assert(
+      fc.property(
+        fc.double({ min: -1e4, max: 1e4, noNaN: true }),
+        fc.double({ min: -1e4, max: 1e4, noNaN: true }),
+        fc.double({ noNaN: false, noDefaultInfinity: false }),
+        fc.double({ noNaN: false, noDefaultInfinity: false }),
+        (current, target, lambda, dt) => {
+          const result = damp(current, target, lambda, dt);
+          expect(Number.isNaN(result)).toBe(false);
+        },
+      ),
+    );
+  });
 });
 
 describe("easeOutCubic (property-based)", () => {

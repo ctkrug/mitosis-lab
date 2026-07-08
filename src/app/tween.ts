@@ -33,7 +33,9 @@ export function damp(
   lambda: number,
   dt: number,
 ): number {
-  if (dt <= 0 || lambda <= 0) return current;
+  if (Number.isNaN(dt) || Number.isNaN(lambda) || dt <= 0 || lambda <= 0) {
+    return current;
+  }
   const t = 1 - Math.exp(-lambda * dt);
   return lerp(current, target, t);
 }
