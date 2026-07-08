@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import fc from "fast-check";
 import { boundsOfPoints, fitCamera } from "../src/app/camera.js";
 
 describe("boundsOfPoints", () => {
@@ -99,5 +100,31 @@ describe("fitCamera", () => {
     const cy = (bounds.minY + bounds.maxY) / 2;
     expect(cx * t.scale + t.x).toBeCloseTo(viewport.width / 2);
     expect(cy * t.scale + t.y).toBeCloseTo(viewport.height / 2);
+  });
+
+  it("(property-based) never produces NaN/Infinity for any finite bounds and viewport", () => {
+    const finiteCoord = fc.double({ min: -1e6, max: 1e6, noNaN: true });
+    fc.assert(
+      fc.property(
+        finiteCoord,
+        finiteCoord,
+        finiteCoord,
+        finiteCoord,
+        fc.double({ min: 0, max: 4000, noNaN: true }),
+        fc.double({ min: 0, max: 4000, noNaN: true }),
+        (ax, ay, bx, by, width, height) => {
+          const bounds = {
+            minX: Math.min(ax, bx),
+            minY: Math.min(ay, by),
+            maxX: Math.max(ax, bx),
+            maxY: Math.max(ay, by),
+          };
+          const t = fitCamera(bounds, { width, height });
+          expect(Number.isFinite(t.scale)).toBe(true);
+          expect(Number.isFinite(t.x)).toBe(true);
+          expect(Number.isFinite(t.y)).toBe(true);
+        },
+      ),
+    );
   });
 });
