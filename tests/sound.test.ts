@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import { shouldThrottle, createMuteStore, SoundEngine } from "../src/app/sound.js";
 
 describe("shouldThrottle", () => {
@@ -80,4 +80,120 @@ describe("SoundEngine", () => {
     }).not.toThrow();
   });
 
+  describe("with a mocked WebAudio window", () => {
+    class FakeParam {
+      setValueAtTime = vi.fn();
+      exponentialRampToValueAtTime = vi.fn();
+    }
+    class FakeOscillator {
+      type = "sine";
+      frequency = new FakeParam();
+      connect = vi.fn(() => ({ connect: vi.fn() }));
+      start = vi.fn();
+      stop = vi.fn();
+    }
+    class FakeGain {
+      gain = new FakeParam();
+      connect = vi.fn();
+    }
+    class FakeAudioContext {
+      state = "suspended";
+      currentTime = 0;
+      destination = {};
+      resume = vi.fn(async () => {
+        this.state = "running";
+      });
+      createOscillator = vi.fn(() => new FakeOscillator());
+      createGain = vi.fn(() => new FakeGain());
+    }
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it("lazily creates one AudioContext, reused across plays", () => {
+      vi.stubGlobal("window", { AudioContext: FakeAudioContext });
+      const engine = new SoundEngine();
+      engine.play("ui", 0);
+      engine.play("divide", 1000);
+      const win = window as unknown as { AudioContext: typeof FakeAudioContext };
+      expect(win.AudioContext).toBeDefined();
+    });
+
+    it("wires oscillator -> gain -> destination and schedules stop", () => {
+      let created: FakeOscillator | undefined;
+      class TrackingCtx extends FakeAudioContext {
+        createOscillator = vi.fn(() => {
+          created = new FakeOscillator();
+          return created;
+        });
+      }
+      vi.stubGlobal("window", { AudioContext: TrackingCtx });
+      const engine = new SoundEngine();
+      engine.play("saturate", 0);
+      expect(created).toBeDefined();
+      expect(created!.start).toHaveBeenCalledOnce();
+      expect(created!.stop).toHaveBeenCalledOnce();
+      expect(created!.connect).toHaveBeenCalledOnce();
+    });
+
+    it("falls back to webkitAudioContext when AudioContext is absent", () => {
+      vi.stubGlobal("window", { webkitAudioContext: FakeAudioContext });
+      const engine = new SoundEngine();
+      expect(() => engine.play("ui", 0)).not.toThrow();
+    });
+
+    it("silently no-ops when neither AudioContext nor webkitAudioContext exists", () => {
+      vi.stubGlobal("window", {});
+      const engine = new SoundEngine();
+      expect(() => engine.play("ui", 0)).not.toThrow();
+    });
+
+    it("skips synthesis entirely while muted, even with WebAudio available", () => {
+      let created = false;
+      class TrackingCtx extends FakeAudioContext {
+        createOscillator = vi.fn(() => {
+          created = true;
+          return new FakeOscillator();
+        });
+      }
+      vi.stubGlobal("window", { AudioContext: TrackingCtx });
+      const engine = new SoundEngine();
+      engine.setMuted(true);
+      engine.play("ui", 0);
+      expect(created).toBe(false);
+    });
+
+    it("resumes a suspended context on unlock", () => {
+      const ctx = new FakeAudioContext();
+      class SingletonCtx {
+        constructor() {
+          return ctx as unknown as SingletonCtx;
+        }
+      }
+      vi.stubGlobal("window", { AudioContext: SingletonCtx });
+      const engine = new SoundEngine();
+      engine.unlock();
+      expect(ctx.resume).toHaveBeenCalledOnce();
+    });
+
+    it("does not resume an already-running context on unlock", () => {
+      const ctx = new FakeAudioContext();
+      ctx.state = "running";
+      class SingletonCtx {
+        constructor() {
+          return ctx as unknown as SingletonCtx;
+        }
+      }
+      vi.stubGlobal("window", { AudioContext: SingletonCtx });
+      const engine = new SoundEngine();
+      engine.unlock();
+      expect(ctx.resume).not.toHaveBeenCalled();
+    });
+
+    it("no-ops unlock when WebAudio is unavailable", () => {
+      const engine = new SoundEngine();
+      expect(() => engine.unlock()).not.toThrow();
+    });
+  });
 });
