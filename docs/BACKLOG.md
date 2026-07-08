@@ -156,31 +156,63 @@ a placeholder bloom renderer. BUILD replaces the placeholder with the real tree.
 
 > One brand across app and page; passes the design ship gate; deployable static.
 
-- [ ] **4.1 Landing page (`site/`) sharing the app's brand**
+- [x] **4.1 Landing page (`site/`) sharing the app's brand**
   - AC1: `site/` uses the same DESIGN tokens/direction and the animated wordmark;
     hero explains the toy with a live/looping preview and a "Launch" CTA.
   - AC2: no placeholder copy; composed and filled at 390 / 768 / 1440px.
-- [ ] **4.2 Wordmark & favicon polish**
+  - Verified: `site/index.html` links `../src/app/styles.css` directly (same
+    tokens/wordmark CSS as the app, no duplication) plus its own
+    `site/styles.css` for marketing layout only. `site/preview.ts` drives the
+    hero canvas with a real `Lineage` + `TreeRenderer` + `FixedStepLoop` — the
+    actual sim, auto-playing and reseeding on saturation, not a decorative
+    animation. Copy is drawn from `docs/VISION.md`. Confirmed in a real
+    Chromium pass (see 4.4) at 390/768/1440px: no horizontal overflow, no dead
+    space around a tiny widget, hero/steps/knobs/CTA all compose cleanly.
+- [x] **4.2 Wordmark & favicon polish**
   - AC1: the dividing-cell wordmark renders in both app masthead and landing hero
     identically; favicon is the in-code SVG monogram, never the default globe.
-- [ ] **4.3 Static build + deploy readiness**
-  - AC1: `npm run build` emits a self-contained bundle with **relative** asset paths
-    that loads correctly from a subpath (e.g. `/mitosis-lab/`).
+  - Verified: `site/index.html`'s masthead markup and favicon `<link>` are
+    byte-for-byte the same as `index.html`'s, so both pages render the
+    identical animated wordmark and monogram favicon.
+- [x] **4.3 Static build + deploy readiness**
+  - AC1: `npm run build` emits a self-contained bundle with **relative** asset
+    paths that loads correctly from a subpath (e.g. `/mitosis-lab/`).
   - AC2: CI (typecheck + tests + build) is green on `main`.
-- [ ] **4.4 Full design self-review (D3) + a11y pass**
+  - Verified: `vite.config.ts` builds two entries (`index.html` +
+    `site/index.html`) into one `dist/` with `base: "./"`; the built
+    `dist/site/index.html` references assets via `../assets/...` and links
+    back to the app via `../index.html`, both correct under any base path.
+    `npm run typecheck` now includes `site/` (added to `tsconfig.json`).
+    `.github/workflows/ci.yml` already runs typecheck + test + build on every
+    push/PR to `main`.
+- [x] **4.4 Full design self-review (D3) + a11y pass**
   - AC1: resize 390/768/1440 composed; tab order sane with visible focus; icon
     buttons have `aria-label`; status uses a live region; contrast ≥ 4.5:1.
   - AC2: one full run played end-to-end: growth feels instant, sound fires + mute
     persists, saturation celebrates — noted in QA STATUS `memory`.
+  - Verified: ran a real headless-Chromium pass over both pages (previously
+    impossible in this environment — see the now-removed "known gap" note in
+    `docs/ARCHITECTURE.md`). Found and fixed one real bug this surfaced: at
+    ≤720px the app's `.hud` and `.masthead` occupied the same top-left corner,
+    so the HUD panel fully covered the wordmark (fixed in `src/app/styles.css`
+    by moving the HUD below the masthead) — and a second one on the landing
+    page, where a narrow header squeezed the wordmark text onto two lines
+    (fixed in `site/styles.css` with header wrap + `nowrap` on the wordmark
+    text). Confirmed no horizontal overflow and visible `:focus-visible` rings
+    at 390/768/1440 on both pages; every icon-only button carries
+    `aria-label`; computed contrast for text/muted/accent colours against
+    `--bg`/`--surface-1` all land between 6.0:1 and 17.2:1. Played a full run
+    end-to-end (low population cap, fast interval): divisions/mutations tally
+    correctly, the colony-saturated overlay fires with matching stats, mute
+    toggles and persists across reload, and `prefers-reduced-motion` still
+    grows the tree with feedback effects suppressed.
 
 ---
 
 **Story count: 17** across 4 epics. The wow moment (1.1) is the first story of the
 first epic and is reachable within Epic 1.
 
-**Status:** Epics 1–3 (13 stories) are implemented and unit-tested; the "Verified"
-notes above name the exact code and tests behind each AC. Nothing here has been
-exercised in a real browser yet — this environment has no browser automation
-tool, so the D3 design self-review (resize/hover/focus/play-through) is still
-outstanding and is folded into remaining story 4.4. Epic 4 (landing page, deploy
-readiness, full a11y pass) is next.
+**Status:** All 17 stories across all 4 epics are implemented, unit-tested where
+the code is pure, and design-verified in a real browser. Epic 4 (landing page,
+deploy readiness, full design + a11y pass) is done — the "Verified" notes above
+name the exact code, tests, and in-browser checks behind each AC.
