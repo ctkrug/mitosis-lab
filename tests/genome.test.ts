@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
+import fc from "fast-check";
 import { inherit, seedGenome } from "../src/sim/genome.js";
 import { makeRng } from "../src/sim/rng.js";
 import { DEFAULT_PARAMS } from "../src/sim/types.js";
+import type { Genome } from "../src/sim/types.js";
 
 describe("inherit", () => {
   it("copies the mother genome exactly when mutation rate is zero", () => {
@@ -40,5 +42,35 @@ describe("inherit", () => {
       expect(g.divisionBias).toBeGreaterThanOrEqual(0.4);
       expect(g.divisionBias).toBeLessThanOrEqual(2.0);
     }
+  });
+});
+
+describe("inherit (property-based)", () => {
+  it("keeps every trait in its documented range for any seed, mother, or mutation rate", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0, max: 0xffffffff }),
+        fc.record({
+          hue: fc.double({ min: 0, max: 359.999, noNaN: true }),
+          size: fc.double({ min: 0.5, max: 1.6, noNaN: true }),
+          divisionBias: fc.double({ min: 0.4, max: 2.0, noNaN: true }),
+        }),
+        fc.double({ min: 0, max: 1, noNaN: true }),
+        (seed, mother, mutationRate) => {
+          const rng = makeRng(seed);
+          const { genome } = inherit(
+            mother as Genome,
+            { ...DEFAULT_PARAMS, mutationRate },
+            rng,
+          );
+          expect(genome.hue).toBeGreaterThanOrEqual(0);
+          expect(genome.hue).toBeLessThan(360);
+          expect(genome.size).toBeGreaterThanOrEqual(0.5);
+          expect(genome.size).toBeLessThanOrEqual(1.6);
+          expect(genome.divisionBias).toBeGreaterThanOrEqual(0.4);
+          expect(genome.divisionBias).toBeLessThanOrEqual(2.0);
+        },
+      ),
+    );
   });
 });
