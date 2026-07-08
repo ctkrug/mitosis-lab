@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
+import fc from "fast-check";
 import { parseRunConfig, serializeRunConfig, DEFAULT_SEED } from "../src/app/url.js";
 import { DEFAULT_PARAMS } from "../src/sim/types.js";
-import { PARAM_RANGES } from "../src/app/params.js";
+import { PARAM_RANGES, type ParamRange } from "../src/app/params.js";
 
 describe("parseRunConfig", () => {
   it("falls back to defaults for an empty query string", () => {
@@ -86,5 +87,40 @@ describe("serializeRunConfig", () => {
     const search = serializeRunConfig({ seed: "x", params: DEFAULT_PARAMS });
     expect(search.startsWith("?")).toBe(false);
     expect(search).toContain("seed=x");
+  });
+});
+
+describe("serializeRunConfig (property-based)", () => {
+  const paramArb = (range: ParamRange) =>
+    fc.double({ min: range.min, max: range.max, noNaN: true });
+
+  it("round-trips any in-range params and any non-blank seed", () => {
+    fc.assert(
+      fc.property(
+        fc.string({ minLength: 1 }).filter((s) => s.trim().length > 0),
+        paramArb(PARAM_RANGES.mutationRate),
+        paramArb(PARAM_RANGES.meanDivisionInterval),
+        paramArb(PARAM_RANGES.divisionJitter),
+        paramArb(PARAM_RANGES.maxPopulation),
+        (seed, mutationRate, meanDivisionInterval, divisionJitter, maxPopulation) => {
+          const original = {
+            seed,
+            params: { mutationRate, meanDivisionInterval, divisionJitter, maxPopulation },
+          };
+          const parsed = parseRunConfig(
+            `?${serializeRunConfig(original)}`,
+            DEFAULT_PARAMS,
+          );
+          expect(parsed.seed).toBe(seed);
+          expect(parsed.params.mutationRate).toBeCloseTo(mutationRate, 9);
+          expect(parsed.params.meanDivisionInterval).toBeCloseTo(
+            meanDivisionInterval,
+            9,
+          );
+          expect(parsed.params.divisionJitter).toBeCloseTo(divisionJitter, 9);
+          expect(parsed.params.maxPopulation).toBeCloseTo(maxPopulation, 9);
+        },
+      ),
+    );
   });
 });
