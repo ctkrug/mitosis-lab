@@ -2,6 +2,11 @@ import { describe, it, expect } from "vitest";
 import fc from "fast-check";
 import { boundsOfPoints, fitCamera } from "../src/app/camera.js";
 
+const finitePoint = fc.record({
+  x: fc.double({ min: -1e6, max: 1e6, noNaN: true }),
+  y: fc.double({ min: -1e6, max: 1e6, noNaN: true }),
+});
+
 describe("boundsOfPoints", () => {
   it("returns a zero box at the origin for no points", () => {
     expect(boundsOfPoints([])).toEqual({ minX: 0, minY: 0, maxX: 0, maxY: 0 });
@@ -19,6 +24,22 @@ describe("boundsOfPoints", () => {
       { x: 3, y: 7 },
     ]);
     expect(b).toEqual({ minX: -2, minY: -1, maxX: 10, maxY: 7 });
+  });
+});
+
+describe("boundsOfPoints (property-based)", () => {
+  it("every input point falls within the returned box, for any non-empty finite set", () => {
+    fc.assert(
+      fc.property(fc.array(finitePoint, { minLength: 1, maxLength: 200 }), (points) => {
+        const b = boundsOfPoints(points);
+        for (const p of points) {
+          expect(p.x).toBeGreaterThanOrEqual(b.minX);
+          expect(p.x).toBeLessThanOrEqual(b.maxX);
+          expect(p.y).toBeGreaterThanOrEqual(b.minY);
+          expect(p.y).toBeLessThanOrEqual(b.maxY);
+        }
+      }),
+    );
   });
 });
 
