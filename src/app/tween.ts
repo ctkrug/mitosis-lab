@@ -5,9 +5,9 @@
  * without a browser: no Date.now(), no requestAnimationFrame.
  */
 
-/** Clamp `v` into [lo, hi]. */
+/** Clamp `v` into [lo, hi], falling back to `lo` for a NaN input. */
 export const clamp = (v: number, lo: number, hi: number): number =>
-  Math.min(hi, Math.max(lo, v));
+  Number.isNaN(v) ? lo : Math.min(hi, Math.max(lo, v));
 
 /** Linear interpolation from `a` to `b` at `t` (unclamped). */
 export const lerp = (a: number, b: number, t: number): number =>

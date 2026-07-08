@@ -119,4 +119,14 @@ describe("easeOutCubic (property-based)", () => {
       }),
     );
   });
+
+  it("always returns a value in [0, 1] for any double, including NaN/±Infinity", () => {
+    fc.assert(
+      fc.property(fc.double({ noNaN: false, noDefaultInfinity: false }), (t) => {
+        const v = easeOutCubic(t);
+        expect(v).toBeGreaterThanOrEqual(0);
+        expect(v).toBeLessThanOrEqual(1);
+      }),
+    );
+  });
 });
