@@ -92,6 +92,45 @@ describe("computeRadialLayout", () => {
     expect(spanOf(1)).toBeCloseTo(spanOf(2) * 2, 5);
   });
 
+  it("partitions the angular window among multiple root cells", () => {
+    // Two independent trees (no shared parent) share the same layout call —
+    // exercises the forest branch of the root-placement loop, not just the
+    // single-root case every other test uses.
+    const cells = [
+      makeCell({ id: 0, generation: 0, divided: true }),
+      makeCell({ id: 1, parentId: 0, generation: 1 }),
+      makeCell({ id: 2, parentId: 0, generation: 1 }),
+      makeCell({ id: 5, generation: 0 }),
+    ];
+    const layout = computeRadialLayout(cells, {
+      angleStart: 0,
+      angleSpan: Math.PI * 2,
+    });
+    const rootA = layout.get(0)!;
+    const rootB = layout.get(5)!;
+    // Root A's subtree (weight 2) gets twice root B's span (weight 1).
+    expect(rootA.angleEnd - rootA.angleStart).toBeCloseTo(
+      (rootB.angleEnd - rootB.angleStart) * 2,
+      5,
+    );
+    // The two roots' spans are contiguous and exactly tile the full window.
+    expect(Math.min(rootA.angleStart, rootB.angleStart)).toBeCloseTo(0);
+    expect(Math.max(rootA.angleEnd, rootB.angleEnd)).toBeCloseTo(Math.PI * 2);
+  });
+
+  it("degrades to an empty layout for a rootless (malformed) cell list", () => {
+    // Every cell references a parentId that doesn't exist in the list, so
+    // there's no cell with parentId === null to anchor the tree at. This
+    // should never happen from a real Lineage, but the layout must not
+    // throw on corrupt input — it degrades to placing nothing.
+    const cells = [
+      makeCell({ id: 1, parentId: 99, generation: 1 }),
+      makeCell({ id: 2, parentId: 99, generation: 1 }),
+    ];
+    expect(() => computeRadialLayout(cells)).not.toThrow();
+    expect(computeRadialLayout(cells).size).toBe(0);
+  });
+
   it("never overlaps two sibling subtrees' angular ranges", () => {
     const lineage = new Lineage("no-overlap", { maxPopulation: 256 });
     lineage.advance(2000);
